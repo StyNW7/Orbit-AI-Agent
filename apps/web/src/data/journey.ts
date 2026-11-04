@@ -1,0 +1,325 @@
+import type { Text } from '@/lib/i18n';
+import type { Dimension, Milestone, Opportunity, Quest, QuestKind, QuestStep } from './types';
+
+export const MILESTONES: Milestone[] = [
+  { id: 'discover', title: { en: 'Discover', id: 'Kenali' }, description: { en: 'Understand the role and where you stand.', id: 'Pahami peran dan posisimu saat ini.' } },
+  { id: 'foundation', title: { en: 'Build Foundation', id: 'Bangun Fondasi' }, description: { en: 'Close the core skill gaps first.', id: 'Tutup gap skill inti terlebih dahulu.' } },
+  { id: 'experience', title: { en: 'Gain Experience', id: 'Raih Pengalaman' }, description: { en: 'Learn from people and real problems.', id: 'Belajar dari orang dan masalah nyata.' } },
+  { id: 'prove', title: { en: 'Prove Skills', id: 'Buktikan Skill' }, description: { en: 'Create evidence recruiters can see.', id: 'Ciptakan bukti yang bisa dilihat rekruter.' } },
+  { id: 'prepare', title: { en: 'Prepare to Apply', id: 'Siap Melamar' }, description: { en: 'Sharpen your CV, story and interviews.', id: 'Pertajam CV, cerita, dan wawancaramu.' } },
+  { id: 'apply', title: { en: 'Apply', id: 'Melamar' }, description: { en: 'Go after the opportunities that fit.', id: 'Kejar peluang yang paling cocok.' } },
+];
+
+export const MILESTONE_BY_ID = Object.fromEntries(MILESTONES.map((m) => [m.id, m])) as Record<string, Milestone>;
+
+export const KIND_DIMS: Record<QuestKind, Partial<Record<Dimension, number>>> = {
+  learn: { skills: 0.6, projects: 0.2, interview: 0.2 },
+  build: { projects: 0.5, portfolio: 0.5 },
+  connect: { experience: 0.5, interview: 0.5 },
+  apply: { experience: 0.6, interview: 0.4 },
+  practice: { interview: 0.8, skills: 0.2 },
+  reflect: { skills: 0.5, interview: 0.5 },
+};
+
+export const KIND_LABEL: Record<QuestKind, Text> = {
+  learn: { en: 'Learn', id: 'Belajar' },
+  build: { en: 'Build', id: 'Bangun' },
+  connect: { en: 'Connect', id: 'Terhubung' },
+  apply: { en: 'Apply', id: 'Melamar' },
+  practice: { en: 'Practice', id: 'Latihan' },
+  reflect: { en: 'Reflect', id: 'Refleksi' },
+};
+
+const s = (id: string, en: string, idn: string, done = false): QuestStep => ({ id, title: { en, id: idn }, done });
+
+const STEPS_BY_TYPE: Record<Opportunity['type'], [string, string][]> = {
+  course: [
+    ['Finish modules 1–2', 'Selesaikan modul 1–2'],
+    ['Finish the remaining modules', 'Selesaikan modul berikutnya'],
+    ['Complete the graded case', 'Kerjakan studi kasus bernilai'],
+    ['Write three takeaways in your Journal', 'Tulis tiga insight di Journal'],
+  ],
+  job: [
+    ['Tailor your CV to the role', 'Sesuaikan CV dengan peran'],
+    ['Write a short cover note', 'Tulis cover note singkat'],
+    ['Submit the application', 'Kirim lamaran'],
+    ['Prepare for the first interview', 'Siapkan wawancara pertama'],
+  ],
+  internship: [
+    ['Tailor your CV to the role', 'Sesuaikan CV dengan peran'],
+    ['Write a short cover note', 'Tulis cover note singkat'],
+    ['Submit the application', 'Kirim lamaran'],
+    ['Prepare for the first interview', 'Siapkan wawancara pertama'],
+  ],
+  event: [
+    ['Register for the event', 'Daftar event'],
+    ['Prepare two questions', 'Siapkan dua pertanyaan'],
+    ['Attend and take notes', 'Hadir dan catat poin penting'],
+    ['Follow up with one person', 'Follow up dengan satu orang'],
+  ],
+  mentor: [
+    ['Send a short intro message', 'Kirim pesan perkenalan singkat'],
+    ['Share your goal and one question', 'Bagikan tujuan dan satu pertanyaan'],
+    ['Have the session', 'Lakukan sesi mentoring'],
+    ['Log the advice in your Journal', 'Catat saran di Journal'],
+  ],
+  book: [
+    ['Read the first half', 'Baca separuh pertama'],
+    ['Read the second half', 'Baca separuh kedua'],
+    ['Write three takeaways', 'Tulis tiga insight'],
+  ],
+  research: [
+    ['Read the brief', 'Baca brief'],
+    ['Note one action for your journey', 'Catat satu aksi untuk journey-mu'],
+  ],
+};
+
+const TYPE_KIND: Record<Opportunity['type'], QuestKind> = {
+  course: 'learn',
+  book: 'learn',
+  research: 'reflect',
+  mentor: 'connect',
+  event: 'connect',
+  job: 'apply',
+  internship: 'apply',
+};
+
+const TYPE_MILESTONE: Record<Opportunity['type'], string> = {
+  course: 'foundation',
+  book: 'foundation',
+  research: 'discover',
+  mentor: 'experience',
+  event: 'experience',
+  job: 'apply',
+  internship: 'apply',
+};
+
+const TYPE_XP: Record<Opportunity['type'], number> = { course: 180, job: 220, internship: 200, event: 120, mentor: 140, book: 100, research: 60 };
+
+const TYPE_VERB: Record<Opportunity['type'], [string, string]> = {
+  course: ['Complete', 'Selesaikan'],
+  book: ['Read', 'Baca'],
+  research: ['Read', 'Baca'],
+  mentor: ['Meet', 'Bertemu'],
+  event: ['Attend', 'Hadiri'],
+  job: ['Apply to', 'Lamar'],
+  internship: ['Apply to', 'Lamar'],
+};
+
+/** Turns any opportunity into a journey quest the user can act on. */
+export function questFromOpportunity(o: Opportunity, order: number, due?: string): Quest {
+  const [ven, vid] = TYPE_VERB[o.type];
+  const kind = TYPE_KIND[o.type];
+  return {
+    id: `q_${o.id}_${Date.now().toString(36)}`,
+    templateId: `opp:${o.id}`,
+    title: { en: `${ven} ${o.title}`, id: `${vid} ${o.title}` },
+    description: o.summary,
+    milestoneId: TYPE_MILESTONE[o.type],
+    status: 'todo',
+    kind,
+    xp: TYPE_XP[o.type],
+    impact: o.readinessImpact,
+    dims: KIND_DIMS[kind],
+    skill: o.closesGap ?? o.skills[0],
+    resourceId: o.id,
+    due,
+    createdAt: new Date().toISOString(),
+    steps: STEPS_BY_TYPE[o.type].map(([en, idn], i) => s(`st${i}`, en, idn)),
+    order,
+  };
+}
+
+const iso = (daysAgo: number) => new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+const date = (inDays: number) => new Date(Date.now() + inDays * 86_400_000).toISOString().slice(0, 10);
+
+/** Naya's Product Manager Career Path. */
+export function seedQuests(): Quest[] {
+  return [
+    {
+      id: 'q-research-roles',
+      title: { en: 'Research Product Manager roles', id: 'Riset peran Product Manager' },
+      description: { en: 'Compare 10 junior PM job descriptions and list the recurring skills.', id: 'Bandingkan 10 deskripsi kerja PM junior dan catat skill yang sering muncul.' },
+      milestoneId: 'discover',
+      status: 'done',
+      kind: 'reflect',
+      xp: 80,
+      impact: 0.8,
+      dims: KIND_DIMS.reflect,
+      createdAt: iso(40),
+      completedAt: iso(34),
+      baseline: true,
+      steps: [s('a', 'Collect 10 job descriptions', 'Kumpulkan 10 deskripsi kerja', true), s('b', 'Highlight recurring skills', 'Tandai skill yang berulang', true)],
+      order: 0,
+    },
+    {
+      id: 'q-career-profile',
+      title: { en: 'Complete your Career Profile', id: 'Lengkapi Career Profile' },
+      description: { en: 'Add skills, experiences and projects so Orbit can measure readiness.', id: 'Tambahkan skill, pengalaman, dan proyek agar Orbit dapat mengukur kesiapan.' },
+      milestoneId: 'discover',
+      status: 'done',
+      kind: 'reflect',
+      xp: 100,
+      impact: 1,
+      dims: KIND_DIMS.reflect,
+      createdAt: iso(36),
+      completedAt: iso(30),
+      baseline: true,
+      steps: [s('a', 'Add skills', 'Tambahkan skill', true), s('b', 'Add experiences', 'Tambahkan pengalaman', true), s('c', 'Add projects', 'Tambahkan proyek', true)],
+      order: 1,
+    },
+    {
+      id: 'q-sql-basics',
+      templateId: 'opp:course-sql-product',
+      title: { en: 'Learn SQL Basics', id: 'Belajar Dasar SQL' },
+      description: { en: 'Finish SQL for Product Decisions — joins, aggregations and cohorts.', id: 'Selesaikan SQL for Product Decisions — join, agregasi, dan kohort.' },
+      milestoneId: 'foundation',
+      status: 'todo',
+      kind: 'learn',
+      xp: 150,
+      impact: 2.1,
+      dims: KIND_DIMS.learn,
+      skill: 'sql',
+      resourceId: 'course-sql-product',
+      due: date(10),
+      createdAt: iso(12),
+      steps: [s('a', 'SELECT, WHERE and ORDER BY', 'SELECT, WHERE, dan ORDER BY'), s('b', 'Joins and aggregations', 'Join dan agregasi'), s('c', 'Cohort query on a product dataset', 'Query kohort pada dataset produk')],
+      order: 2,
+    },
+    {
+      id: 'q-inspired',
+      templateId: 'opp:book-inspired',
+      title: { en: 'Read “Inspired” by Marty Cagan', id: 'Baca “Inspired” karya Marty Cagan' },
+      description: { en: 'Focus on product discovery and the role of a PM.', id: 'Fokus pada product discovery dan peran seorang PM.' },
+      milestoneId: 'foundation',
+      status: 'doing',
+      kind: 'learn',
+      xp: 100,
+      impact: 0.9,
+      dims: KIND_DIMS.learn,
+      skill: 'product-strategy',
+      resourceId: 'book-inspired',
+      due: date(6),
+      createdAt: iso(14),
+      steps: [s('a', 'Part I — Lessons from top tech', 'Bagian I — Pelajaran dari tech terbaik', true), s('b', 'Part II — The right people', 'Bagian II — Orang yang tepat', true), s('c', 'Part III — The right product', 'Bagian III — Produk yang tepat'), s('d', 'Write three takeaways', 'Tulis tiga insight')],
+      order: 3,
+    },
+    {
+      id: 'q-mentor',
+      templateId: 'opp:mentor-dimas',
+      title: { en: 'Contact an industry mentor', id: 'Hubungi mentor industri' },
+      description: { en: 'Ask Dimas Pratama for 30 minutes on breaking into product.', id: 'Minta 30 menit kepada Dimas Pratama tentang cara masuk ke dunia produk.' },
+      milestoneId: 'experience',
+      status: 'todo',
+      kind: 'connect',
+      xp: 140,
+      impact: 2.2,
+      dims: KIND_DIMS.connect,
+      skill: 'stakeholder',
+      resourceId: 'mentor-dimas',
+      due: date(5),
+      createdAt: iso(9),
+      steps: [s('a', 'Send a short intro message', 'Kirim pesan perkenalan singkat'), s('b', 'Have the session', 'Lakukan sesi mentoring'), s('c', 'Log advice in Journal', 'Catat saran di Journal')],
+      order: 4,
+    },
+    {
+      id: 'q-case-comp',
+      templateId: 'opp:event-case-comp',
+      title: { en: 'Join the National Product Case Competition', id: 'Ikuti National Product Case Competition' },
+      description: { en: 'Form a team of three and practise product thinking under pressure.', id: 'Bentuk tim bertiga dan latih product thinking di bawah tekanan.' },
+      milestoneId: 'experience',
+      status: 'todo',
+      kind: 'connect',
+      xp: 160,
+      impact: 3.0,
+      dims: { experience: 0.4, projects: 0.3, interview: 0.3 },
+      skill: 'product-strategy',
+      resourceId: 'event-case-comp',
+      due: date(8),
+      createdAt: iso(5),
+      steps: [s('a', 'Find two teammates', 'Cari dua anggota tim'), s('b', 'Register the team', 'Daftarkan tim'), s('c', 'Submit the case deck', 'Kirim deck studi kasus')],
+      order: 5,
+    },
+    {
+      id: 'q-case-study',
+      title: { en: 'Build a product case study', id: 'Buat studi kasus produk' },
+      description: { en: 'Turn the Campus Food Pre-order project into a 6-slide case study with metrics.', id: 'Ubah proyek Campus Food Pre-order menjadi studi kasus 6 slide dengan metrik.' },
+      milestoneId: 'prove',
+      status: 'doing',
+      kind: 'build',
+      xp: 220,
+      impact: 2.4,
+      dims: KIND_DIMS.build,
+      skill: 'product-strategy',
+      due: date(9),
+      createdAt: iso(10),
+      steps: [s('a', 'Problem and user insight', 'Masalah dan insight pengguna', true), s('b', 'Solution and trade-offs', 'Solusi dan trade-off', true), s('c', 'Success metrics', 'Metrik keberhasilan'), s('d', 'Publish on portfolio', 'Publikasikan di portofolio')],
+      order: 6,
+    },
+    {
+      id: 'q-portfolio',
+      title: { en: 'Publish your portfolio page', id: 'Publikasikan halaman portofolio' },
+      description: { en: 'One page with two case studies, your story and contact.', id: 'Satu halaman dengan dua studi kasus, ceritamu, dan kontak.' },
+      milestoneId: 'prove',
+      status: 'todo',
+      kind: 'build',
+      xp: 160,
+      impact: 1.6,
+      dims: { portfolio: 1 },
+      createdAt: iso(10),
+      steps: [s('a', 'Choose a template', 'Pilih template'), s('b', 'Add two case studies', 'Tambahkan dua studi kasus'), s('c', 'Share for feedback', 'Bagikan untuk feedback')],
+      order: 7,
+    },
+    {
+      id: 'q-update-cv',
+      title: { en: 'Update your CV for product roles', id: 'Perbarui CV untuk peran produk' },
+      description: { en: 'Rewrite bullets with outcomes and metrics.', id: 'Tulis ulang poin dengan hasil dan metrik.' },
+      milestoneId: 'prepare',
+      status: 'done',
+      kind: 'build',
+      xp: 120,
+      impact: 1.2,
+      dims: KIND_DIMS.build,
+      createdAt: iso(25),
+      completedAt: iso(20),
+      baseline: true,
+      steps: [s('a', 'Rewrite experience bullets', 'Tulis ulang poin pengalaman', true), s('b', 'Get feedback from a peer', 'Minta feedback dari teman', true)],
+      order: 8,
+    },
+    {
+      id: 'q-behavioral',
+      templateId: 'opp:course-interview',
+      title: { en: 'Practise behavioral interviews', id: 'Latihan wawancara behavioral' },
+      description: { en: 'Prepare five STAR stories and record one mock interview.', id: 'Siapkan lima cerita STAR dan rekam satu mock interview.' },
+      milestoneId: 'prepare',
+      status: 'todo',
+      kind: 'practice',
+      xp: 120,
+      impact: 1.8,
+      dims: KIND_DIMS.practice,
+      skill: 'communication',
+      resourceId: 'course-interview',
+      due: date(14),
+      createdAt: iso(8),
+      steps: [s('a', 'Write five STAR stories', 'Tulis lima cerita STAR'), s('b', 'Record one mock interview', 'Rekam satu mock interview'), s('c', 'Review and improve', 'Tinjau dan perbaiki')],
+      order: 9,
+    },
+    {
+      id: 'q-apply-pm',
+      templateId: 'opp:int-pm-lumen',
+      title: { en: 'Apply to Product Management Internship', id: 'Lamar Product Management Internship' },
+      description: { en: 'Lumen Commerce · tailor your CV and case study to checkout.', id: 'Lumen Commerce · sesuaikan CV dan studi kasus dengan konteks checkout.' },
+      milestoneId: 'apply',
+      status: 'todo',
+      kind: 'apply',
+      xp: 200,
+      impact: 5.2,
+      dims: KIND_DIMS.apply,
+      resourceId: 'int-pm-lumen',
+      due: date(11),
+      createdAt: iso(3),
+      steps: [s('a', 'Tailor CV', 'Sesuaikan CV'), s('b', 'Write cover note', 'Tulis cover note'), s('c', 'Submit', 'Kirim')],
+      order: 10,
+    },
+  ];
+}
