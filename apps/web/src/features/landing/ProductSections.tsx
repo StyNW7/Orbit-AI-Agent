@@ -96,7 +96,7 @@ export function UniversePreview() {
               {PNODES.map((n) => {
                 const vis = filter === 'all' || n.group === filter;
                 const on = n.id === sel;
-                return <line key={n.id} x1="50" y1="50" x2={n.x} y2={n.y} stroke={on ? (n.gap ? '#FB9002' : '#0AB46A') : 'var(--border-strong)'} strokeWidth={on ? 0.5 : 0.25} strokeDasharray={on ? '0' : '1 1'} opacity={vis ? 1 : 0.15} vectorEffect="non-scaling-stroke" style={{ transition: 'all .3s' }} />;
+                return <line key={n.id} x1="50" y1="50" x2={n.x} y2={n.y} stroke={on ? (n.gap ? '#FB9002' : '#0AB46A') : 'var(--border-strong)'} strokeWidth={on ? 0.5 : 0.25} strokeDasharray={on ? '0' : '1 1'} opacity={vis ? 1 : 0.15} vectorEffect="non-scaling-stroke" style={{ transition: 'stroke 300ms ease, stroke-width 300ms ease, opacity 300ms ease' }} />;
               })}
             </svg>
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">

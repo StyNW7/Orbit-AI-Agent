@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarDays, Lightbulb, MousePointerClick, PlayCircle, Route, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
@@ -33,7 +33,15 @@ const NODES: HNode[] = [
 
 function HeroOrbit() {
   const { t, l } = useT();
-  const [hover, setHover] = useState<string | null>(null);
+  const [hover, setHoverState] = useState<string | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Moving between neighbouring nodes must not flash the "nothing hovered" state.
+  const setHover = (id: string | null) => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    if (id) setHoverState(id);
+    else leaveTimer.current = setTimeout(() => setHoverState(null), 140);
+  };
+  useEffect(() => () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); }, []);
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[560px]" onMouseLeave={() => setHover(null)}>
       {/* Glow */}
@@ -59,21 +67,37 @@ function HeroOrbit() {
         </defs>
         {NODES.map((n, i) => {
           const on = hover === n.id;
+          const dim = hover !== null && !on;
           return (
-            <motion.line
-              key={n.id}
-              x1="50"
-              y1="50"
-              x2={n.x}
-              y2={n.y}
-              stroke={on ? 'url(#hl)' : 'var(--border-strong)'}
-              strokeWidth={on ? 0.55 : 0.25}
-              strokeDasharray={on ? '1.4 1.2' : '0.8 1.2'}
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: hover && !on ? 0.25 : 1 }}
-              transition={{ pathLength: { duration: 1, delay: 0.5 + i * 0.08, ease }, opacity: { duration: 0.25 } }}
-              style={on ? { animation: 'dash-flow 1.4s linear infinite' } : undefined}
-            />
+            <g key={n.id}>
+              {/* Base line: draws in once, then only its opacity changes. */}
+              <motion.line
+                x1="50"
+                y1="50"
+                x2={n.x}
+                y2={n.y}
+                stroke="var(--border-strong)"
+                strokeWidth={0.28}
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1, delay: 0.5 + i * 0.08, ease }}
+                style={{ opacity: dim ? 0.3 : 1, transition: 'opacity 300ms cubic-bezier(0.22,1,0.36,1)' }}
+              />
+              {/* Highlight line: always mounted, fades in with a seamless flowing dash. */}
+              <line
+                x1="50"
+                y1="50"
+                x2={n.x}
+                y2={n.y}
+                stroke="url(#hl)"
+                strokeWidth={0.6}
+                strokeLinecap="round"
+                strokeDasharray="1.5 1.5"
+                className="hero-flow"
+                style={{ opacity: on ? 1 : 0, transition: 'opacity 300ms cubic-bezier(0.22,1,0.36,1)' }}
+              />
+            </g>
           );
         })}
       </svg>
@@ -87,22 +111,32 @@ function HeroOrbit() {
       {/* Nodes */}
       {NODES.map((n, i) => {
         const on = hover === n.id;
+        const dim = hover !== null && !on;
         return (
           <motion.button
             key={n.id}
             type="button"
             onMouseEnter={() => setHover(n.id)}
+            onMouseLeave={() => setHover(null)}
             onFocus={() => setHover(n.id)}
             onBlur={() => setHover(null)}
             onClick={() => setHover(on ? null : n.id)}
+            // Entrance only — hover styling is handled by CSS so it never re-runs this animation.
             initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: hover && !on ? 0.45 : 1, scale: on ? 1.08 : 1 }}
-            transition={{ duration: 0.35, ease, delay: hover ? 0 : 0.6 + i * 0.07 }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 focus-visible:outline-none"
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, ease, delay: 0.6 + i * 0.07 }}
+            className={cn('absolute -translate-x-1/2 -translate-y-1/2 focus-visible:outline-none', on && 'z-10')}
             style={{ left: `${n.x}%`, top: `${n.y}%` }}
             aria-label={`${l(n.label)} — ${l(n.kind)}`}
           >
-            <span className="flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3 shadow-card transition-shadow" style={{ animation: `float ${6 + (i % 3)}s ease-in-out ${i * 0.4}s infinite` }}>
+            <span style={{ display: 'block', animation: `float ${6 + (i % 3)}s ease-in-out ${i * 0.4}s infinite` }}>
+            <span
+              className={cn(
+                'relative flex items-center gap-2 whitespace-nowrap rounded-full border bg-surface py-1.5 pl-1.5 pr-3 transition-[opacity,transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                on ? 'scale-[1.06] border-green/40 shadow-hover' : 'border-border shadow-card',
+                dim && 'opacity-45',
+              )}
+            >
               <span
                 className={cn(
                   'flex size-7 items-center justify-center rounded-full',
@@ -115,7 +149,17 @@ function HeroOrbit() {
                 <n.icon className="size-3.5" />
               </span>
               <span className="text-[12.5px] font-semibold sm:text-[13px]">{l(n.label)}</span>
-              {on && <span className="hidden text-[11.5px] font-semibold text-green-strong sm:inline dark:text-green">· {l(n.kind)}</span>}
+              {/* Kind label floats below the pill so the node never changes width under the cursor. */}
+              <span
+                className={cn(
+                  'pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#13201a] px-2 py-0.5 text-[11px] font-semibold text-white transition-[opacity,transform] duration-200 dark:bg-[#e7efea] dark:text-[#13201a]',
+                  on ? 'translate-y-0 opacity-100' : '-translate-y-1 opacity-0',
+                )}
+                aria-hidden
+              >
+                {l(n.kind)}
+              </span>
+            </span>
             </span>
           </motion.button>
         );

@@ -47,7 +47,17 @@ function Universe() {
   const graph = useMemo(() => buildUniverse(profile, quests), [profile, quests]);
   const byId = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
 
-  const [hover, setHover] = useState<string | null>(null);
+  const [hover, setHoverState] = useState<string | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Debounced leave: gliding from one node to the next never flashes the un-highlighted graph.
+  const setHover = useCallback((id: string | null) => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    if (id) setHoverState(id);
+    else leaveTimer.current = setTimeout(() => setHoverState(null), 150);
+  }, []);
+  useEffect(() => () => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+  }, []);
   const [selected, setSelected] = useState<string | null>(null);
   const [filter, setFilter] = useState<UFilter>('all');
   const [query, setQuery] = useState('');
@@ -124,7 +134,6 @@ function Universe() {
           type: 'straight',
           className: on ? 'edge-flow' : undefined,
           style: on ? { stroke: toGap ? '#FB9002' : '#0AB46A', strokeWidth: 2.2, opacity: 1 } : { ...base, opacity: dim ? 0.08 : e.kind === 'link' ? 0.45 : 0.9 },
-          zIndex: on ? 1 : 0,
         };
       }),
     [graph, hiSet, highlight, matches, filter, byId],

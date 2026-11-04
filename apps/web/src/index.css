@@ -166,9 +166,21 @@
     opacity: 0;
   }
 }
+/* Offsets are exact multiples of the dash pattern so the loop never jumps. */
 @keyframes dash-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
   to {
-    stroke-dashoffset: -40;
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes dash-flow-hero {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -6;
   }
 }
 
@@ -358,7 +370,10 @@ html.lenis body {
 }
 .edge-flow .react-flow__edge-path {
   stroke-dasharray: 6 6;
-  animation: dash-flow 1.6s linear infinite;
+  animation: dash-flow 1.2s linear infinite;
+}
+.hero-flow {
+  animation: dash-flow-hero 1s linear infinite;
 }
 
 /* Sonner */
