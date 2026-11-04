@@ -1,129 +1,97 @@
-/* Small presentational primitives: Card, Badge, Input, Textarea, Label, Skeleton, Separator, Progress, Avatar, Kbd. */
 import * as React from 'react';
-import * as LabelPrimitive from '@radix-ui/react-label';
-import * as SeparatorPrimitive from '@radix-ui/react-separator';
-import * as ProgressPrimitive from '@radix-ui/react-progress';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { motion } from 'motion/react';
+import type { LucideIcon } from 'lucide-react';
 import { cn, initials } from '@/lib/utils';
+import { ease } from '@/lib/motion';
 
-// ---------------------------------------------------------------------------
-export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('card', className)} {...props} />
-));
-Card.displayName = 'Card';
-
-export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex items-start justify-between gap-3 px-5 pt-5', className)} {...props} />;
-}
-export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('text-[17px] font-semibold leading-tight', className)} {...props} />;
-}
-export function CardEyebrow({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground', className)} {...props} />;
-}
-export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-5 pb-5 pt-4', className)} {...props} />;
+export function Card({ className, interactive, ...props }: React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
+  return <div className={cn('card', interactive && 'card-interactive', className)} {...props} />;
 }
 
-// ---------------------------------------------------------------------------
-const badgeVariants = cva('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11.5px] font-medium leading-5 whitespace-nowrap [&_svg]:size-3', {
-  variants: {
-    tone: {
-      neutral: 'bg-surface-2 text-muted-foreground border border-border',
-      green: 'bg-muted-green text-green-strong dark:text-green',
-      orange: 'bg-muted-orange text-orange-strong dark:text-orange',
-      danger: 'bg-muted-danger text-danger',
-      dark: 'bg-foreground text-background',
-      outline: 'border border-border text-muted-foreground',
-    },
-  },
-  defaultVariants: { tone: 'neutral' },
-});
+type Tone = 'green' | 'orange' | 'neutral' | 'danger' | 'info' | 'violet' | 'outline';
 
-export function Badge({ className, tone, ...props }: React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof badgeVariants>) {
-  return <span className={cn(badgeVariants({ tone }), className)} {...props} />;
-}
+const TONES: Record<Tone, string> = {
+  green: 'bg-muted-green text-green-strong dark:text-green',
+  orange: 'bg-muted-orange text-orange-strong dark:text-orange',
+  neutral: 'bg-surface-2 text-muted-foreground',
+  danger: 'bg-muted-danger text-danger',
+  info: 'bg-muted-info text-info',
+  violet: 'bg-muted-violet text-violet',
+  outline: 'border border-border text-muted-foreground',
+};
 
-// ---------------------------------------------------------------------------
-const fieldClass =
-  'w-full rounded-lg border border-border bg-surface px-3 text-sm text-foreground placeholder:text-subtle-foreground shadow-[0_1px_2px_rgba(16,23,20,0.04)] transition focus:border-green focus:outline-none focus:ring-4 focus:ring-[var(--ring)] disabled:opacity-60';
-
-export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => (
-  <input ref={ref} className={cn(fieldClass, 'h-10', className)} {...props} />
-));
-Input.displayName = 'Input';
-
-export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(({ className, ...props }, ref) => (
-  <textarea ref={ref} className={cn(fieldClass, 'min-h-[96px] py-2.5 leading-relaxed', className)} {...props} />
-));
-Textarea.displayName = 'Textarea';
-
-export const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>>(
-  ({ className, ...props }, ref) => <LabelPrimitive.Root ref={ref} className={cn('text-[13px] font-medium text-foreground', className)} {...props} />,
-);
-Label.displayName = 'Label';
-
-export function FieldError({ children }: { children?: React.ReactNode }) {
-  if (!children) return null;
+export function Badge({ tone = 'neutral', className, dot, children, ...props }: React.HTMLAttributes<HTMLSpanElement> & { tone?: Tone; dot?: boolean }) {
   return (
-    <p role="alert" className="mt-1 text-[12.5px] text-danger">
+    <span className={cn('inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-[12px] font-semibold leading-none', TONES[tone], className)} {...props}>
+      {dot && <span className="size-1.5 rounded-full bg-current" />}
       {children}
-    </p>
+    </span>
   );
 }
 
-// ---------------------------------------------------------------------------
-export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div aria-hidden className={cn('skeleton', className)} {...props} />;
-}
-
-export const Separator = ({ className, orientation = 'horizontal', ...props }: React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>) => (
-  <SeparatorPrimitive.Root
-    orientation={orientation}
-    className={cn('shrink-0 bg-border', orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px', className)}
-    {...props}
-  />
-);
-
-// ---------------------------------------------------------------------------
-export function Progress({
-  value,
-  className,
-  tone = 'green',
-  label,
-}: {
-  value: number;
-  className?: string;
-  tone?: 'green' | 'orange' | 'gradient' | 'neutral';
-  label?: string;
-}) {
-  const v = Math.max(0, Math.min(100, value));
-  const bar =
-    tone === 'orange' ? 'bg-orange' : tone === 'gradient' ? 'orbit-gradient' : tone === 'neutral' ? 'bg-subtle-foreground' : 'bg-green';
+export function IconBox({ icon: Icon, tone = 'green', size = 'md', className }: { icon: LucideIcon; tone?: Tone; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+  const s = { sm: 'size-8 rounded-[10px] [&_svg]:size-4', md: 'size-10 rounded-xl [&_svg]:size-[18px]', lg: 'size-12 rounded-[14px] [&_svg]:size-[22px]' }[size];
   return (
-    <ProgressPrimitive.Root value={v} aria-label={label} className={cn('relative h-2 w-full overflow-hidden rounded-full bg-surface-2', className)}>
-      <ProgressPrimitive.Indicator className={cn('h-full rounded-full transition-[width] duration-700 ease-out', bar)} style={{ width: `${v}%` }} />
-    </ProgressPrimitive.Root>
-  );
-}
-
-// ---------------------------------------------------------------------------
-export function Avatar({ name, src, className }: { name: string; src?: string | null; className?: string }) {
-  return (
-    <AvatarPrimitive.Root className={cn('relative flex size-9 shrink-0 overflow-hidden rounded-full', className)}>
-      {src && <AvatarPrimitive.Image src={src} alt={name} className="aspect-square size-full object-cover" />}
-      <AvatarPrimitive.Fallback className="flex size-full items-center justify-center bg-muted-green text-[13px] font-semibold text-green-strong dark:text-green">
-        {initials(name) || 'O'}
-      </AvatarPrimitive.Fallback>
-    </AvatarPrimitive.Root>
+    <span className={cn('inline-flex shrink-0 items-center justify-center', s, TONES[tone], className)}>
+      <Icon aria-hidden />
+    </span>
   );
 }
 
 export function Kbd({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <kbd className={cn('inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-border bg-surface px-1.5 font-sans text-[11px] font-semibold text-muted-foreground shadow-xs', className)}>{children}</kbd>;
+}
+
+export function ProgressBar({
+  value,
+  className,
+  tone = 'green',
+  size = 'md',
+  label,
+  animate = true,
+}: {
+  value: number;
+  className?: string;
+  tone?: 'green' | 'orange' | 'gradient' | 'neutral';
+  size?: 'xs' | 'sm' | 'md';
+  label?: string;
+  animate?: boolean;
+}) {
+  const h = { xs: 'h-1', sm: 'h-1.5', md: 'h-2' }[size];
+  const bg = { green: 'bg-green', orange: 'bg-orange', gradient: 'orbit-gradient', neutral: 'bg-foreground/40' }[tone];
+  const v = Math.max(0, Math.min(100, value));
   return (
-    <kbd className={cn('rounded border border-border bg-surface-2 px-1.5 py-px font-sans text-[11px] font-medium text-muted-foreground', className)}>
-      {children}
-    </kbd>
+    <div className={cn('w-full overflow-hidden rounded-full bg-surface-3', h, className)} role="progressbar" aria-valuenow={Math.round(v)} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
+      <motion.div
+        className={cn('h-full rounded-full', bg)}
+        initial={animate ? { width: 0 } : false}
+        animate={{ width: `${v}%` }}
+        transition={{ duration: 0.9, ease }}
+      />
+    </div>
   );
+}
+
+export function Avatar({ name, hue = 152, size = 36, className }: { name: string; hue?: number; size?: number; className?: string }) {
+  return (
+    <span
+      className={cn('inline-flex shrink-0 select-none items-center justify-center rounded-full font-display font-bold text-white ring-2 ring-surface', className)}
+      style={{ width: size, height: size, fontSize: size * 0.36, background: `linear-gradient(135deg, hsl(${hue} 78% 38%), hsl(${(hue + 40) % 360} 85% 50%))` }}
+      aria-hidden
+    >
+      {initials(name)}
+    </span>
+  );
+}
+
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cn('skeleton', className)} aria-hidden />;
+}
+
+export function Divider({ className, vertical }: { className?: string; vertical?: boolean }) {
+  return <div role="separator" className={cn(vertical ? 'w-px self-stretch bg-border' : 'h-px w-full bg-border', className)} />;
+}
+
+export function Dot({ className }: { className?: string }) {
+  return <span aria-hidden className={cn('inline-block size-1 rounded-full bg-subtle-foreground', className)} />;
 }

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F8FAF9" />
+    <meta name="description" content="Orbit is a Smart Career & Learning Ecosystem that helps students understand their career readiness, close skill gaps, discover relevant opportunities and always know the best next step." />
+    <meta property="og:title" content="Orbit — Your career is not a straight line." />
+    <meta property="og:description" content="A Smart Career & Learning Ecosystem for future-ready students: explainable Career Readiness, an interactive Career Universe, adaptive journeys and a context-aware Career Agent." />
+    <meta property="og:type" content="website" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>Orbit — Smart Career & Learning Ecosystem</title>
+    <script>
+      try {
+        var l = localStorage.getItem('orbit.locale');
+        if (l !== 'en' && l !== 'id') l = (navigator.language || '').toLowerCase().indexOf('id') === 0 ? 'id' : 'en';
+        document.documentElement.lang = l;
+      } catch (e) {}
+      try {
+        var t = localStorage.getItem('orbit.theme');
+        var dark = t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0C1310');
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      html { background: #f8faf9; }
+      html.dark { background: #0c1310; }
+      .boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .boot svg { width: 56px; height: 56px; filter: drop-shadow(0 12px 28px rgba(10, 180, 106, 0.35)); }
+      .boot .ring { transform-origin: 32px 32px; animation: boot-spin 2.4s linear infinite; }
+      @keyframes boot-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .boot .ring { animation: none; } }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Cg8Z5sj2.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/react-BbqF2lZG.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-DGrn5bj_.js">
+    <link rel="modulepreload" crossorigin href="/assets/flow-BU-vhMKg.js">
+    <link rel="modulepreload" crossorigin href="/assets/motion-WXF4VD4C.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-Clq8QDq_.css">
+  <link rel="manifest" href="/manifest.webmanifest"></head>
+  <body>
+    <div id="root">
+      <div class="boot" role="status" aria-label="Loading Orbit">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="17" fill="#0AB46A" />
+          <g class="ring">
+            <ellipse cx="32" cy="32" rx="22" ry="9" transform="rotate(-28 32 32)" stroke="#fff" stroke-opacity=".6" stroke-width="3" fill="none" />
+            <circle cx="50" cy="21" r="5" fill="#FB9002" />
+          </g>
+          <circle cx="32" cy="32" r="9" fill="#fff" />
+        </svg>
+      </div>
+    </div>
+  </body>
+</html>

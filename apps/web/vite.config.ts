@@ -34,19 +34,17 @@ export default defineConfig(({ command }) => {
 });
 
 const config = {
-  // Read VITE_* variables from the monorepo root .env (server secrets are never prefixed with VITE_).
-  envDir: '../../',
   plugins: [
     noCircularChunks,
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'demo/sample-cv-stanley-wijaya.pdf'],
+      includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Orbit — Build Your Path. Become Career-Ready.',
+        name: 'Orbit — Smart Career & Learning Ecosystem',
         short_name: 'Orbit',
-        description: 'Agentic career & personal growth platform — English & Bahasa Indonesia.',
+        description: 'Understand your career readiness, close skill gaps and always know your next best step.',
         theme_color: '#0AB46A',
         background_color: '#F8FAF9',
         display: 'standalone',
@@ -59,7 +57,6 @@ const config = {
       },
       workbox: {
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
@@ -75,10 +72,10 @@ const config = {
         // (e.g. Radix) can make the chunks import each other and crash React at startup.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router'],
-          graph: ['sigma', 'graphology', 'graphology-layout-forceatlas2', 'graphology-layout'],
           flow: ['@xyflow/react'],
           charts: ['recharts'],
           motion: ['motion'],
+          dnd: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
         },
       },
     },

@@ -1,0 +1,220 @@
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { motion, useScroll, useTransform } from 'motion/react';
+import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarDays, Lightbulb, MousePointerClick, PlayCircle, Route, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ReadinessRing } from '@/components/brand/brand';
+import { useOrbit } from '@/store/orbit';
+import { useT } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
+import { ease } from '@/lib/motion';
+import { scrollToId } from './chrome';
+
+interface HNode {
+  id: string;
+  label: { en: string; id: string };
+  icon: LucideIcon;
+  x: number; // % of box
+  y: number;
+  tone: 'green' | 'orange' | 'dark' | 'soft';
+  kind: { en: string; id: string };
+}
+
+const NODES: HNode[] = [
+  { id: 'pm', label: { en: 'Product Manager', id: 'Product Manager' }, icon: Target, x: 50, y: 9, tone: 'dark', kind: { en: 'Target role', id: 'Peran target' } },
+  { id: 'pa', label: { en: 'Product Analytics', id: 'Product Analytics' }, icon: Target, x: 83, y: 27, tone: 'orange', kind: { en: 'Priority gap', id: 'Gap prioritas' } },
+  { id: 'sql', label: { en: 'SQL Course', id: 'Kursus SQL' }, icon: BookOpen, x: 17, y: 25, tone: 'green', kind: { en: 'Learning', id: 'Belajar' } },
+  { id: 'lead', label: { en: 'Leadership', id: 'Kepemimpinan' }, icon: Lightbulb, x: 8, y: 57, tone: 'green', kind: { en: 'Strength', id: 'Kekuatan' } },
+  { id: 'intern', label: { en: 'Internship', id: 'Magang' }, icon: BriefcaseBusiness, x: 90, y: 63, tone: 'orange', kind: { en: '92% match', id: '92% cocok' } },
+  { id: 'mentor', label: { en: 'Mentor', id: 'Mentor' }, icon: Users, x: 24, y: 86, tone: 'soft', kind: { en: 'People', id: 'Orang' } },
+  { id: 'quest', label: { en: 'Case Study Quest', id: 'Quest Studi Kasus' }, icon: Route, x: 66, y: 91, tone: 'green', kind: { en: 'In progress', id: 'Berjalan' } },
+  { id: 'event', label: { en: 'Workshop', id: 'Workshop' }, icon: CalendarDays, x: 79, y: 9, tone: 'soft', kind: { en: 'Event', id: 'Event' } },
+];
+
+function HeroOrbit() {
+  const { t, l } = useT();
+  const [hover, setHover] = useState<string | null>(null);
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[560px]" onMouseLeave={() => setHover(null)}>
+      {/* Glow */}
+      <div className="absolute inset-[20%] rounded-full bg-green/20 blur-3xl" aria-hidden />
+      <div className="absolute inset-[35%] translate-x-[30%] rounded-full bg-orange/15 blur-3xl" aria-hidden />
+      {/* Rotating orbits */}
+      {[
+        { inset: '30%', dur: 40 },
+        { inset: '17%', dur: 70, rev: true },
+        { inset: '4%', dur: 110 },
+      ].map((r, i) => (
+        <div key={i} className="absolute rounded-full border border-dashed border-border-strong" style={{ inset: r.inset, animation: `orbit-spin ${r.dur}s linear infinite ${r.rev ? 'reverse' : ''}` }} aria-hidden>
+          <span className={cn('absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full', i === 1 ? 'bg-orange shadow-orange' : 'bg-green shadow-green')} />
+        </div>
+      ))}
+      {/* Connections */}
+      <svg className="absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden>
+        <defs>
+          <linearGradient id="hl" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#0AB46A" />
+            <stop offset="1" stopColor="#FB9002" />
+          </linearGradient>
+        </defs>
+        {NODES.map((n, i) => {
+          const on = hover === n.id;
+          return (
+            <motion.line
+              key={n.id}
+              x1="50"
+              y1="50"
+              x2={n.x}
+              y2={n.y}
+              stroke={on ? 'url(#hl)' : 'var(--border-strong)'}
+              strokeWidth={on ? 0.55 : 0.25}
+              strokeDasharray={on ? '1.4 1.2' : '0.8 1.2'}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: hover && !on ? 0.25 : 1 }}
+              transition={{ pathLength: { duration: 1, delay: 0.5 + i * 0.08, ease }, opacity: { duration: 0.25 } }}
+              style={on ? { animation: 'dash-flow 1.4s linear infinite' } : undefined}
+            />
+          );
+        })}
+      </svg>
+      {/* Center */}
+      <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.8, ease, delay: 0.2 }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <span className="absolute inset-0 animate-pulse-ring rounded-full bg-green/35" aria-hidden />
+        <div className="orbit-gradient relative flex size-[92px] items-center justify-center rounded-full font-display text-[20px] font-extrabold text-white shadow-[0_20px_50px_-14px_rgba(10,180,106,0.85)] ring-[6px] ring-surface sm:size-[110px] sm:text-[22px]">
+          {t('YOU', 'KAMU')}
+        </div>
+      </motion.div>
+      {/* Nodes */}
+      {NODES.map((n, i) => {
+        const on = hover === n.id;
+        return (
+          <motion.button
+            key={n.id}
+            type="button"
+            onMouseEnter={() => setHover(n.id)}
+            onFocus={() => setHover(n.id)}
+            onBlur={() => setHover(null)}
+            onClick={() => setHover(on ? null : n.id)}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: hover && !on ? 0.45 : 1, scale: on ? 1.08 : 1 }}
+            transition={{ duration: 0.35, ease, delay: hover ? 0 : 0.6 + i * 0.07 }}
+            className="absolute -translate-x-1/2 -translate-y-1/2 focus-visible:outline-none"
+            style={{ left: `${n.x}%`, top: `${n.y}%` }}
+            aria-label={`${l(n.label)} — ${l(n.kind)}`}
+          >
+            <span className="flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3 shadow-card transition-shadow" style={{ animation: `float ${6 + (i % 3)}s ease-in-out ${i * 0.4}s infinite` }}>
+              <span
+                className={cn(
+                  'flex size-7 items-center justify-center rounded-full',
+                  n.tone === 'green' && 'bg-green text-white',
+                  n.tone === 'orange' && 'bg-orange text-white',
+                  n.tone === 'dark' && 'bg-[#13201a] text-white dark:bg-[#e7efea] dark:text-[#13201a]',
+                  n.tone === 'soft' && 'bg-surface-2 text-muted-foreground',
+                )}
+              >
+                <n.icon className="size-3.5" />
+              </span>
+              <span className="text-[12.5px] font-semibold sm:text-[13px]">{l(n.label)}</span>
+              {on && <span className="hidden text-[11.5px] font-semibold text-green-strong sm:inline dark:text-green">· {l(n.kind)}</span>}
+            </span>
+          </motion.button>
+        );
+      })}
+      {/* Floating cards */}
+      <motion.div initial={{ opacity: 0, y: 20, x: -10 }} animate={{ opacity: 1, y: 0, x: 0 }} transition={{ duration: 0.7, ease, delay: 1.2 }} className="absolute -left-2 top-[34%] hidden sm:block lg:-left-10">
+        <div className="glass flex items-center gap-3 rounded-2xl border border-border p-3 pr-4 shadow-pop" style={{ animation: 'float 7s ease-in-out infinite' }}>
+          <ReadinessRing score={74} size={58} stroke={6} showBand={false} />
+          <div>
+            <div className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">{t('Readiness', 'Kesiapan')}</div>
+            <div className="text-[14px] font-bold">Product Manager</div>
+          </div>
+        </div>
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: 1.45 }} className="absolute -bottom-6 right-0 w-[270px] sm:-right-4 lg:-right-10">
+        <div className="glass rounded-2xl border border-border p-4 shadow-pop" style={{ animation: 'float 8s ease-in-out 1s infinite' }}>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-orange-strong dark:text-orange">
+            <Sparkles className="size-3.5" /> Next Best Action
+          </div>
+          <div className="mt-1.5 text-[14.5px] font-bold leading-snug">{t('Complete Product Analytics Foundations', 'Selesaikan Product Analytics Foundations')}</div>
+          <div className="mt-2 flex items-center justify-between text-[12px]">
+            <span className="text-muted-foreground">{t('Estimated readiness impact', 'Perkiraan dampak kesiapan')}</span>
+            <span className="tabular rounded-full bg-muted-green px-2 py-0.5 font-bold text-green-strong dark:text-green">+4.2%</span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export function Hero() {
+  const { t } = useT();
+  const mode = useOrbit((s) => s.mode);
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 600], [0, 80]);
+  const opacity = useTransform(scrollY, [0, 500], [1, 0.3]);
+  const words = t('Your career is not a straight line.', 'Kariermu bukan garis lurus.').split(' ');
+
+  return (
+    <section className="relative overflow-hidden pb-20 pt-28 sm:pt-32 lg:pb-28 lg:pt-36">
+      <div className="pointer-events-none absolute inset-0 grid-lines [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_30%,transparent_75%)]" aria-hidden />
+      <div className="pointer-events-none absolute -left-40 top-20 size-[520px] rounded-full bg-green/12 blur-3xl" aria-hidden />
+      <div className="pointer-events-none absolute -right-40 top-40 size-[460px] rounded-full bg-orange/10 blur-3xl" aria-hidden />
+      <div className="container-orbit relative grid items-center gap-14 lg:grid-cols-[1.02fr_1fr] lg:gap-10">
+        <motion.div style={{ y, opacity }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3.5 text-[13px] font-semibold shadow-xs">
+            <span className="rounded-full bg-green px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">New</span>
+            {t('Smart Career & Learning Ecosystem', 'Smart Career & Learning Ecosystem')}
+          </motion.div>
+          <h1 className="mt-6 font-display text-[46px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[64px] lg:text-[72px]">
+            {words.map((w, i) => {
+              const accent = i >= words.length - 3;
+              return (
+                <motion.span key={i} initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.7, ease, delay: 0.1 + i * 0.07 }} className={cn('mr-[0.22em] inline-block', accent && 'orbit-gradient-text pb-1')}>
+                  {w}
+                </motion.span>
+              );
+            })}
+          </h1>
+          <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.55 }} className="mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground sm:text-[19px]">
+            {t('Your career is an orbit of skills, experiences, people, knowledge, and opportunities.', 'Kariermu adalah orbit dari skill, pengalaman, orang, pengetahuan, dan peluang.')}{' '}
+            <strong className="font-semibold text-foreground">{t('Orbit connects them and shows you where to go next.', 'Orbit menghubungkan semuanya dan menunjukkan ke mana kamu melangkah berikutnya.')}</strong>
+          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.68 }} className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button size="xl" asChild>
+              <Link to={mode === 'none' ? '/start' : '/app'}>
+                {t('Build My Orbit', 'Bangun Orbit Saya')} <ArrowRight />
+              </Link>
+            </Button>
+            <Button size="xl" variant="secondary" onClick={() => scrollToId('how')}>
+              {t('Explore How It Works', 'Lihat Cara Kerjanya')}
+            </Button>
+          </motion.div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.85 }} className="mt-5">
+            <Link to="/start?demo=1" className="group inline-flex items-center gap-2 text-[14px] font-semibold text-green-strong dark:text-green">
+              <PlayCircle className="size-[18px]" />
+              {t('Try the 2-minute demo as Naya — no sign-up', 'Coba demo 2 menit sebagai Naya — tanpa daftar')}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+          <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1 }} className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-[13.5px] text-muted-foreground">
+            {[
+              { icon: Sparkles, l: t('Explainable readiness score', 'Skor kesiapan yang dijelaskan') },
+              { icon: ShieldCheck, l: t('Asks before changing your plan', 'Bertanya sebelum mengubah rencana') },
+              { icon: Languages, l: 'English & Bahasa Indonesia' },
+            ].map((x) => (
+              <li key={x.l} className="flex items-center gap-2">
+                <x.icon className="size-4 text-green" /> {x.l}
+              </li>
+            ))}
+          </motion.ul>
+        </motion.div>
+        <div className="relative">
+          <HeroOrbit />
+          <p className="mt-10 flex items-center justify-center gap-1.5 text-[12.5px] text-subtle-foreground lg:mt-12">
+            <MousePointerClick className="size-3.5" /> {t('Hover a node to trace its connection', 'Arahkan ke node untuk melihat koneksinya')}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}

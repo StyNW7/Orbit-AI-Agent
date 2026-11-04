@@ -1,221 +1,291 @@
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
-import { BellRing, BrainCircuit, Check, CheckCircle2, CircleAlert, Cpu, Database, History, Languages, LogOut, Monitor, Moon, Palette, ShieldCheck, Sun, Workflow } from 'lucide-react';
-import type { AgentActionView } from '@orbit/shared';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { motion } from 'motion/react';
+import { toast } from 'sonner';
+import { Bell, Check, Download, Laptop, LogOut, Moon, Palette, RotateCcw, Save, Sun, Target, User, Layers, Database } from 'lucide-react';
+import { PageHeader, SectionHeader } from '@/components/shared/layout-blocks';
+import { Avatar, Badge, Card } from '@/components/ui/primitives';
 import { Button } from '@/components/ui/button';
-import { Badge, Card } from '@/components/ui/primitives';
-import { PageHeader, SectionTitle } from '@/components/common/states';
-import { useAgentStatus, useMe } from '@/hooks/queries';
-import { useUiStore, type ThemePreference } from '@/stores/ui';
-import { authMode, signOut } from '@/lib/auth';
-import { api } from '@/lib/api';
-import { centerOf, cn, relative } from '@/lib/utils';
-import { LOCALES, useI18nStore, useT } from '@/lib/i18n';
-import { useLabels } from '@/lib/i18n/labels';
+import { Field, Input, Select, Switch } from '@/components/ui/form';
+import { Segmented } from '@/components/ui/tabs';
+import { ReadinessRing } from '@/components/brand/brand';
+import { SkillLevelPicker } from '@/components/shared/SkillLevel';
+import { LanguageToggle } from '@/components/shared/toggles';
+import { useOrbit, useInsights } from '@/store/orbit';
+import { useUi, type ThemePreference } from '@/store/ui';
+import { requestReset } from '@/store/actions';
+import { MAJORS, ROLES, ROLE_BY_ID, SKILL_BY_ID } from '@/data/catalog';
+import type { Level, RoleId } from '@/data/types';
+import { skillCoverage } from '@/engine/intelligence';
+import { useT } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
+import { ease } from '@/lib/motion';
+
+const PREFS_KEY = 'orbit.notifyPrefs';
 
 export default function SettingsPage() {
-  const { data: me } = useMe();
-  const { data: status, refetch, isFetching } = useAgentStatus();
-  const { data: audit = [] } = useQuery({ queryKey: ['agent-audit'], queryFn: () => api.get<AgentActionView[]>('/agent/actions') });
-  const theme = useUiStore((s) => s.theme);
-  const setTheme = useUiStore((s) => s.setTheme);
+  const profile = useOrbit((s) => s.profile)!;
+  const updateProfile = useOrbit((s) => s.updateProfile);
+  const signOut = useOrbit((s) => s.signOut);
+  const mode = useOrbit((s) => s.mode);
+  const insights = useInsights()!;
+  const theme = useUi((s) => s.theme);
+  const setTheme = useUi((s) => s.setTheme);
+  const askConfirm = useUi((s) => s.askConfirm);
   const navigate = useNavigate();
-  const { t, locale } = useT();
-  const labels = useLabels();
-  const setLocale = useI18nStore((s) => s.setLocale);
-  const notifPermission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+  const [params] = useSearchParams();
+  const { t, l } = useT();
+
+  const [form, setForm] = useState({ name: profile.name, email: profile.email, headline: profile.headline, university: profile.university, major: profile.major, semester: profile.semester, gpa: profile.gpa });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const dirty = JSON.stringify(form) !== JSON.stringify({ name: profile.name, email: profile.email, headline: profile.headline, university: profile.university, major: profile.major, semester: profile.semester, gpa: profile.gpa });
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(PREFS_KEY) ?? '') as Record<string, boolean>;
+    } catch {
+      return { deadlines: true, weekly: true, opportunities: true, mentors: false };
+    }
+  });
+  useEffect(() => localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)), [prefs]);
+
+  useEffect(() => {
+    const r = params.get('role');
+    if (r) document.getElementById('career-goal')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [params]);
+
+  const saveProfile = () => {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = t('Name is required', 'Nama wajib diisi');
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = t('Enter a valid email', 'Masukkan email yang valid');
+    if (form.gpa < 0 || form.gpa > 4) e.gpa = t('GPA must be 0–4', 'IPK harus 0–4');
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    updateProfile({ ...form, name: form.name.trim() });
+    toast.success(t('Profile updated', 'Profil diperbarui'));
+  };
+
+  const changeRole = (id: RoleId) => {
+    if (id === profile.targetRole) return;
+    askConfirm({
+      title: t('Change your career goal?', 'Ganti tujuan kariermu?'),
+      description: t('Orbit will recalculate your Career Readiness, gaps and recommendations for the new role. Your journey stays as it is.', 'Orbit akan menghitung ulang Career Readiness, gap, dan rekomendasi untuk peran baru. Journey-mu tetap seperti sekarang.'),
+      items: [{ label: l(ROLE_BY_ID[id].name), meta: l(ROLE_BY_ID[id].tagline) }],
+      icon: 'journey',
+      confirmLabel: t('Change goal', 'Ganti tujuan'),
+      onConfirm: () => {
+        updateProfile({ targetRole: id });
+        toast.success(t('Career goal updated', 'Tujuan karier diperbarui'), { description: l(ROLE_BY_ID[id].name) });
+      },
+    });
+  };
+
+  const exportData = () => {
+    const data = useOrbit.getState();
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), profile: data.profile, quests: data.quests, saved: data.saved, reminders: data.reminders, journal: data.journal, activity: data.activity, xp: data.xp }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orbit-${profile.name.split(' ')[0].toLowerCase()}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(t('Your Orbit data was exported', 'Data Orbit-mu berhasil diekspor'));
+  };
+
+  const role = ROLE_BY_ID[profile.targetRole];
 
   return (
-    <div className="space-y-5">
-      <PageHeader eyebrow={t('settings.eyebrow')} title={t('settings.title')} description={t('settings.desc')} />
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card className="p-6">
-          <SectionTitle icon={ShieldCheck} title={t('settings.account')} />
-          <dl className="space-y-2 text-[14px]">
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{t('settings.name')}</dt>
-              <dd className="font-medium">{me?.user.name}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{t('settings.email')}</dt>
-              <dd className="font-medium">{me?.user.email}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{t('settings.auth')}</dt>
-              <dd>
-                <Badge tone="green">{authMode === 'supabase' ? t('settings.authSupabase') : t('settings.authLocal')}</Badge>
-              </dd>
-            </div>
-          </dl>
-          <Button variant="secondary" className="mt-5" onClick={() => void signOut().then(() => navigate('/'))}>
-            <LogOut /> {t('common.signOut')}
-          </Button>
-        </Card>
+    <div className="space-y-6">
+      <PageHeader eyebrow={t('Profile & settings', 'Profil & pengaturan')} title={t('Your Orbit, your way', 'Orbit-mu, caramu')} description={t('Changes update your Career Intelligence instantly.', 'Perubahan langsung memperbarui Career Intelligence-mu.')} />
 
-        <Card className="p-6">
-          <SectionTitle icon={Palette} title={t('settings.appearance')} />
-          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('theme.label')}>
-            {(
-              [
-                { value: 'light', label: t('theme.light'), icon: Sun },
-                { value: 'dark', label: t('theme.dark'), icon: Moon },
-                { value: 'system', label: t('theme.system'), icon: Monitor },
-              ] as { value: ThemePreference; label: string; icon: typeof Sun }[]
-            ).map((th) => (
-              <button
-                key={th.value}
-                role="radio"
-                aria-checked={theme === th.value}
-                onClick={(e) => setTheme(th.value, centerOf(e.currentTarget))}
-                className={cn('flex flex-col items-center gap-2 rounded-xl border p-4 text-[13px] font-medium transition', theme === th.value ? 'border-green bg-muted-green text-green-strong dark:text-green' : 'border-border hover:border-border-strong')}
-              >
-                <th.icon className="size-5" /> {th.label}
-              </button>
-            ))}
-          </div>
-          <p className="mb-2.5 mt-5 flex items-center gap-2 text-[14px] font-semibold">
-            <Languages className="size-4 text-green" /> {t('settings.language')}
-          </p>
-          <p className="-mt-1 mb-3 text-[13px] text-muted-foreground">{t('lang.description')}</p>
-          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('settings.language')}>
-            {LOCALES.map((l) => (
-              <button
-                key={l.value}
-                role="radio"
-                aria-checked={locale === l.value}
-                onClick={() => setLocale(l.value)}
-                className={cn(
-                  'flex items-center gap-3 rounded-xl border p-3.5 text-left text-[13.5px] font-medium transition',
-                  locale === l.value ? 'border-green bg-muted-green text-green-strong dark:text-green' : 'border-border hover:border-border-strong',
-                )}
-              >
-                <span className={cn('flex size-8 items-center justify-center rounded-lg text-[12px] font-bold', locale === l.value ? 'bg-green text-white' : 'bg-surface-2 text-muted-foreground')}>{l.short}</span>
-                <span className="flex-1">{l.label}</span>
-                {locale === l.value && <Check className="size-4" />}
-              </button>
-            ))}
-          </div>
-          <div className="mt-5 flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-4">
-            <div>
-              <p className="flex items-center gap-2 text-[14px] font-semibold">
-                <BellRing className="size-4 text-orange" /> {t('settings.notifications')}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">{t('settings.notificationsDesc')}</p>
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="space-y-6">
+          {/* Profile */}
+          <Card className="p-5 sm:p-6">
+            <SectionHeader icon={User} title={t('Career Profile', 'Career Profile')} description={t('The basics Orbit uses to understand you.', 'Data dasar yang dipakai Orbit untuk memahamimu.')} />
+            <div className="mb-5 flex items-center gap-4">
+              <Avatar name={form.name || profile.name} hue={profile.avatarHue} size={60} />
+              <div className="min-w-0">
+                <div className="truncate font-display text-[18px] font-bold">{form.name || profile.name}</div>
+                <div className="truncate text-[13.5px] text-muted-foreground">{form.headline}</div>
+              </div>
             </div>
-            {notifPermission === 'default' && (
-              <Button size="sm" variant="secondary" onClick={() => void Notification.requestPermission()}>
-                {t('settings.allowAlerts')}
-              </Button>
-            )}
-            {notifPermission === 'granted' && <Badge tone="green">{t('settings.alertsOn')}</Badge>}
-          </div>
-        </Card>
-
-        <Card className="p-6 lg:col-span-2">
-          <SectionTitle
-            icon={BrainCircuit}
-            title={t('settings.agent')}
-            action={
-              <Button size="sm" variant="ghost" onClick={() => void refetch()} loading={isFetching}>
-                {t('settings.recheck')}
-              </Button>
-            }
-          />
-          {status ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-              <StatusTile icon={Workflow} title={t('settings.engine')} value={labels.engine(status.activeEngine)} ok detail={status.activeEngine === 'planner' ? t('settings.enginePlanner') : t('settings.engineModel')} />
-              <StatusTile
-                icon={Workflow}
-                title={t('settings.langflow')}
-                value={
-                  !status.langflow.configured
-                    ? t('settings.lf.notConfigured')
-                    : !status.langflow.reachable
-                      ? t('settings.lf.unreachable')
-                      : status.langflow.skippedReason
-                        ? t('settings.lf.standingBy')
-                        : t('settings.lf.connected')
-                }
-                ok={status.langflow.reachable && !status.langflow.skippedReason}
-                detail={
-                  status.langflow.skippedReason ??
-                  (status.langflow.flowId
-                    ? t('settings.lf.flow', { id: status.langflow.flowId.slice(0, 8), provider: status.langflow.modelProvider })
-                    : t('settings.lf.setup'))
-                }
-              />
-              <StatusTile
-                icon={Cpu}
-                title={t('settings.model')}
-                value={`${status.ai.provider} · ${status.ai.model}`}
-                ok={status.ai.reachable && status.ai.interactive}
-                detail={
-                  !status.ai.reachable
-                    ? t('settings.modelUnavailable')
-                    : status.ai.throughput
-                      ? `${t('settings.modelSpeed', { tps: status.ai.throughput.evalTps })}${status.ai.interactive ? '' : t('settings.modelSlow')}`
-                      : t('settings.modelHosted')
-                }
-              />
-              <StatusTile icon={Database} title={t('settings.embeddings')} value={status.embeddings.provider} ok detail={status.embeddings.model} />
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t('settings.checking')}</p>
-          )}
-          <p className="mt-4 text-[12.5px] text-muted-foreground">
-            {t('settings.aiNote')}
-          </p>
-        </Card>
-
-        <Card className="p-6 lg:col-span-2">
-          <SectionTitle icon={History} title={t('settings.log')} />
-          {audit.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('settings.logEmpty')}</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-[13px]">
-                <thead className="text-[11.5px] uppercase tracking-[0.06em] text-muted-foreground">
-                  <tr className="border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">{t('settings.col.tool')}</th>
-                    <th className="py-2 pr-3 font-semibold">{t('settings.col.level')}</th>
-                    <th className="py-2 pr-3 font-semibold">{t('settings.col.summary')}</th>
-                    <th className="py-2 pr-3 font-semibold">{t('settings.col.status')}</th>
-                    <th className="py-2 font-semibold">{t('settings.col.when')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {audit.slice(0, 15).map((a) => (
-                    <tr key={a.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-3 font-mono text-[12px]">{a.tool}</td>
-                      <td className="py-2.5 pr-3">
-                        <Badge tone={a.level === 'WRITE' ? 'orange' : a.level === 'SUGGEST' ? 'green' : 'neutral'}>{labels.actionLevel(a.level)}</Badge>
-                      </td>
-                      <td className="max-w-[360px] truncate py-2.5 pr-3 text-muted-foreground">{a.resultSummary ?? a.description}</td>
-                      <td className="py-2.5 pr-3">{labels.actionStatus(a.status)}</td>
-                      <td className="py-2.5 text-subtle-foreground">{relative(a.createdAt)}</td>
-                    </tr>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveProfile();
+              }}
+              className="grid gap-4 sm:grid-cols-2"
+            >
+              <Field label={t('Full name', 'Nama lengkap')} htmlFor="s-name" error={errors.name}>
+                <Input id="s-name" value={form.name} aria-invalid={Boolean(errors.name)} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
+              </Field>
+              <Field label={t('Email', 'Email')} htmlFor="s-email" error={errors.email}>
+                <Input id="s-email" type="email" value={form.email} aria-invalid={Boolean(errors.email)} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+              </Field>
+              <Field label={t('Headline', 'Headline')} htmlFor="s-head" className="sm:col-span-2">
+                <Input id="s-head" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} />
+              </Field>
+              <Field label={t('University', 'Universitas')} htmlFor="s-uni">
+                <Input id="s-uni" value={form.university} onChange={(e) => setForm({ ...form, university: e.target.value })} />
+              </Field>
+              <Field label={t('Major', 'Jurusan')} htmlFor="s-major">
+                <Select id="s-major" value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })}>
+                  {[...new Set([form.major, ...MAJORS])].map((m) => (
+                    <option key={m}>{m}</option>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-      </div>
-    </div>
-  );
-}
+                </Select>
+              </Field>
+              <Field label={t('Semester', 'Semester')} htmlFor="s-sem">
+                <Select id="s-sem" value={form.semester} onChange={(e) => setForm({ ...form, semester: Number(e.target.value) })}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                  <option value={9}>{t('Graduated', 'Lulus')}</option>
+                </Select>
+              </Field>
+              <Field label={t('GPA', 'IPK')} htmlFor="s-gpa" error={errors.gpa}>
+                <Input id="s-gpa" type="number" step="0.01" min={0} max={4} value={form.gpa} aria-invalid={Boolean(errors.gpa)} onChange={(e) => setForm({ ...form, gpa: Number(e.target.value) })} />
+              </Field>
+              <div className="flex justify-end gap-2 sm:col-span-2">
+                {dirty && (
+                  <Button variant="ghost" onClick={() => setForm({ name: profile.name, email: profile.email, headline: profile.headline, university: profile.university, major: profile.major, semester: profile.semester, gpa: profile.gpa })}>
+                    {t('Discard', 'Batalkan')}
+                  </Button>
+                )}
+                <Button type="submit" disabled={!dirty}>
+                  <Save /> {t('Save profile', 'Simpan profil')}
+                </Button>
+              </div>
+            </form>
+          </Card>
 
-function StatusTile({ icon: Icon, title, value, ok, detail }: { icon: typeof Cpu; title: string; value: string; ok: boolean; detail: string }) {
-  return (
-    <div className="rounded-xl border border-border p-4">
-      <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-        <Icon className="size-3.5" /> {title}
-      </p>
-      <p className="mt-2 flex items-center gap-1.5 font-semibold">
-        {ok ? <CheckCircle2 className="size-4 text-green" /> : <CircleAlert className="size-4 text-orange" />}
-        <span className="truncate">{value}</span>
-      </p>
-      <p className="mt-1 text-[12px] text-muted-foreground">{detail}</p>
+          {/* Goal */}
+          <Card id="career-goal" className="scroll-mt-24 p-5 sm:p-6">
+            <SectionHeader icon={Target} title={t('Career goal', 'Tujuan karier')} description={t('Orbit measures readiness against this role.', 'Orbit mengukur kesiapan terhadap peran ini.')} />
+            <div role="radiogroup" aria-label={t('Career goal', 'Tujuan karier')} className="grid gap-2.5 sm:grid-cols-2">
+              {ROLES.map((r) => {
+                const active = r.id === profile.targetRole;
+                const highlighted = params.get('role') === r.id && !active;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => changeRole(r.id)}
+                    className={cn('flex items-center justify-between gap-3 rounded-2xl border-2 p-4 text-left transition hover:border-border-strong', active ? 'border-green bg-muted-green/40' : highlighted ? 'border-orange/60' : 'border-border')}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-display text-[15px] font-bold">{l(r.name)}</div>
+                      <div className="text-[12.5px] text-muted-foreground">{t('Skill match {s}%', 'Kecocokan skill {s}%', { s: Math.round(skillCoverage(profile, r.id)) })}</div>
+                    </div>
+                    <span className={cn('flex size-6 shrink-0 items-center justify-center rounded-full border-2', active ? 'border-green bg-green text-white' : 'border-border-strong')}>{active && <Check className="size-3.5" strokeWidth={3} />}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Skills */}
+          <Card className="p-5 sm:p-6">
+            <SectionHeader icon={Layers} title={t('Skills for {r}', 'Skill untuk {r}', { r: l(role.name) })} description={t('Update a level and watch your readiness respond.', 'Ubah level dan lihat kesiapanmu berubah.')} />
+            <div className="divide-y divide-border">
+              {role.requirements.map((r) => (
+                <div key={r.skill} className="grid gap-2.5 py-3.5 sm:grid-cols-[1fr_minmax(0,360px)] sm:items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-semibold">{l(SKILL_BY_ID[r.skill].name)}</span>
+                    {(profile.skills[r.skill] ?? 0) < r.target && <Badge tone="orange">{t('Gap', 'Gap')}</Badge>}
+                  </div>
+                  <SkillLevelPicker value={(profile.skills[r.skill] ?? 0) as Level} target={r.target} label={l(SKILL_BY_ID[r.skill].name)} onChange={(v) => updateProfile({ skills: { ...profile.skills, [r.skill]: v } })} />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <Card className="flex flex-col items-center p-6 text-center">
+            <ReadinessRing score={insights.readiness} size={150} stroke={11} />
+            <div className="mt-3 font-display text-[16px] font-bold">{l(role.name)}</div>
+            <p className="mt-1 text-[12.5px] text-muted-foreground">{t('Live Career Readiness — updates as you edit.', 'Career Readiness langsung — berubah saat kamu mengedit.')}</p>
+          </Card>
+
+          <Card className="p-5">
+            <SectionHeader icon={Palette} title={t('Appearance', 'Tampilan')} className="mb-3" />
+            <Segmented<ThemePreference>
+              full
+              size="sm"
+              label={t('Theme', 'Tema')}
+              value={theme}
+              onChange={(v) => setTheme(v)}
+              options={[
+                { value: 'light', label: t('Light', 'Terang'), icon: Sun },
+                { value: 'dark', label: t('Dark', 'Gelap'), icon: Moon },
+                { value: 'system', label: t('System', 'Sistem'), icon: Laptop },
+              ]}
+            />
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-[14px] font-semibold">{t('Language', 'Bahasa')}</span>
+              <LanguageToggle />
+            </div>
+          </Card>
+
+          <Card className="p-5">
+            <SectionHeader icon={Bell} title={t('Notifications', 'Notifikasi')} className="mb-2" />
+            {[
+              { k: 'deadlines', label: t('Application deadlines', 'Deadline lamaran') },
+              { k: 'opportunities', label: t('New matching opportunities', 'Peluang baru yang cocok') },
+              { k: 'weekly', label: t('Weekly review', 'Weekly review') },
+              { k: 'mentors', label: t('Mentor availability', 'Ketersediaan mentor') },
+            ].map((p) => (
+              <div key={p.k} className="flex items-center justify-between py-2.5">
+                <label htmlFor={`pref-${p.k}`} className="text-[14px]">
+                  {p.label}
+                </label>
+                <Switch id={`pref-${p.k}`} checked={Boolean(prefs[p.k])} onChange={(v) => setPrefs({ ...prefs, [p.k]: v })} label={p.label} />
+              </div>
+            ))}
+          </Card>
+
+          <Card className="p-5">
+            <SectionHeader icon={Database} title={t('Your data', 'Datamu')} description={t('Stored privately in this browser.', 'Tersimpan privat di browser ini.')} className="mb-3" />
+            <div className="space-y-2">
+              <Button variant="secondary" className="w-full justify-start" onClick={exportData}>
+                <Download /> {t('Export my data (JSON)', 'Ekspor data saya (JSON)')}
+              </Button>
+              {mode === 'demo' && (
+                <Button variant="secondary" className="w-full justify-start" onClick={() => requestReset(() => navigate('/app'))}>
+                  <RotateCcw /> {t('Reset demo data', 'Reset data demo')}
+                </Button>
+              )}
+              <Button
+                variant="danger-soft"
+                className="w-full justify-start"
+                onClick={() =>
+                  askConfirm({
+                    title: t('Sign out of Orbit?', 'Keluar dari Orbit?'),
+                    description: t('Your data in this browser will be cleared.', 'Datamu di browser ini akan dihapus.'),
+                    icon: 'delete',
+                    tone: 'danger',
+                    confirmLabel: t('Sign out', 'Keluar'),
+                    onConfirm: () => {
+                      signOut();
+                      navigate('/');
+                    },
+                  })
+                }
+              >
+                <LogOut /> {t('Sign out', 'Keluar')}
+              </Button>
+            </div>
+          </Card>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, ease }} className="text-center text-[12px] text-subtle-foreground">
+            Orbit · Smart Education & Campus Innovation · SDG 4
+          </motion.p>
+        </div>
+      </div>
     </div>
   );
 }

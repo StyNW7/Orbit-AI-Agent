@@ -1,399 +1,304 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import {
-  ArrowRight,
-  BookOpen,
-  BrainCircuit,
-  BriefcaseBusiness,
-  CalendarDays,
-  FileText,
-  GraduationCap,
-  Maximize2,
-  Minus,
-  Network,
-  Plus,
-  RefreshCw,
-  Search,
-  X,
-} from 'lucide-react';
-import { UNIVERSE_FILTERS, type GraphNodeView, type NodeDetail, type UniverseFilterId } from '@orbit/shared';
+import { ReactFlow, ReactFlowProvider, useNodesInitialized, useNodesState, useReactFlow, type Edge, type Node } from '@xyflow/react';
+import { ArrowRight, Info, Maximize, Minus, Plus, RotateCcw, Sparkles, X } from 'lucide-react';
+import { PageHeader } from '@/components/shared/layout-blocks';
+import { SearchInput } from '@/components/ui/form';
+import { FilterChips } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge, Progress, Skeleton } from '@/components/ui/primitives';
 import { Tooltip } from '@/components/ui/overlays';
-import { EmptyState, ErrorState, LoadingState } from '@/components/common/states';
-import { useAddSkillToJourney, useNodeDetail, useRebuildUniverse, useUniverse } from '@/hooks/queries';
-import { usePageContext, useIsDark, useUiStore } from '@/stores/ui';
-import { NODE_STYLE, nodeColor, onNodeColor } from '@/lib/icons';
-import { cn, relative } from '@/lib/utils';
+import { useOrbit, useInsights } from '@/store/orbit';
+import { buildUniverse, neighbours, type UFilter, type UNode } from '@/engine/universe';
+import { nodeTypes, type UData, type VisualState } from './nodes';
+import { NodeDrawer } from './NodeDrawer';
 import { useT } from '@/lib/i18n';
-import { useLabels } from '@/lib/i18n/labels';
-import { UniverseGraph, type UniverseGraphHandle } from './UniverseGraph';
-
+import { cn } from '@/lib/utils';
+import { ease } from '@/lib/motion';
+import { SKILL_BY_ID } from '@/data/catalog';
 
 export default function UniversePage() {
-  const { data, isLoading, error, refetch, dataUpdatedAt } = useUniverse();
-  const rebuild = useRebuildUniverse();
+  return (
+    <ReactFlowProvider>
+      <Universe />
+    </ReactFlowProvider>
+  );
+}
+
+const FILTERS: { value: UFilter; en: string; id: string }[] = [
+  { value: 'all', en: 'All', id: 'Semua' },
+  { value: 'career', en: 'Career', id: 'Karier' },
+  { value: 'skills', en: 'Skills', id: 'Skill' },
+  { value: 'experience', en: 'Experience', id: 'Pengalaman' },
+  { value: 'opportunity', en: 'Opportunity', id: 'Peluang' },
+  { value: 'learning', en: 'Learning', id: 'Belajar' },
+  { value: 'people', en: 'People', id: 'Orang' },
+  { value: 'gap', en: 'Gap', id: 'Gap' },
+];
+
+function Universe() {
+  const profile = useOrbit((s) => s.profile)!;
+  const quests = useOrbit((s) => s.quests);
+  const insights = useInsights()!;
+  const { t, l } = useT();
   const [params, setParams] = useSearchParams();
-  const [filter, setFilter] = useState<UniverseFilterId>('ALL');
-  const [selectedId, setSelectedId] = useState<string | null>(params.get('node'));
+  const rf = useReactFlow();
+  const initialized = useNodesInitialized();
+  const graph = useMemo(() => buildUniverse(profile, quests), [profile, quests]);
+  const byId = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
+
+  const [hover, setHover] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [filter, setFilter] = useState<UFilter>('all');
   const [query, setQuery] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const graphRef = useRef<UniverseGraphHandle>(null);
-  const dark = useIsDark();
-  const { t, tn } = useT();
-  const labels = useLabels();
+  const [focusId, setFocusId] = useState<string | null>(() => params.get('focus'));
+  const [legend, setLegend] = useState(() => window.innerWidth >= 1100);
+  const didFit = useRef(false);
 
-  const selected = data?.nodes.find((n) => n.id === selectedId) ?? null;
-  usePageContext({ page: 'universe', entityType: selected ? 'node' : undefined, entityId: selected?.id, label: selected?.label });
-
-  useEffect(() => {
-    const fromUrl = params.get('node');
-    if (fromUrl && data?.nodes.some((n) => n.id === fromUrl)) {
-      setSelectedId(fromUrl);
-      setTimeout(() => graphRef.current?.focus(fromUrl), 350);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
-
-  const counts = useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const f of UNIVERSE_FILTERS) c[f.id] = f.types.length ? (data?.nodes.filter((n) => (f.types as string[]).includes(n.type)).length ?? 0) : (data?.nodes.length ?? 0);
-    return c;
-  }, [data]);
-
+  const highlight = hover ?? selected ?? focusId;
+  const hiSet = useMemo(() => (highlight && byId.has(highlight) ? neighbours(highlight, graph.edges) : null), [highlight, graph, byId]);
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q || !data) return [];
-    // Exact, then prefix, then substring — so Enter opens "Product Analytics" before "Product Analytics Workshop".
-    const rank = (label: string) => (label === q ? 0 : label.startsWith(q) ? 1 : 2);
-    return data.nodes
-      .filter((n) => n.label.toLowerCase().includes(q))
-      .sort((a, b) => rank(a.label.toLowerCase()) - rank(b.label.toLowerCase()) || a.label.length - b.label.length)
-      .slice(0, 8);
-  }, [query, data]);
+    if (!q) return null;
+    return new Set(graph.nodes.filter((n) => n.cat !== 'you' && (l(n.label).toLowerCase().includes(q) || (n.sub && l(n.sub).toLowerCase().includes(q)))).map((n) => n.id));
+  }, [query, graph, l]);
 
-  const select = (id: string | null) => {
-    setSelectedId(id);
-    const next = new URLSearchParams(params);
-    if (id) next.set('node', id);
-    else next.delete('node');
-    setParams(next, { replace: true });
+  const stateOf = useCallback(
+    (n: UNode): VisualState => {
+      if (matches) return matches.has(n.id) ? 'match' : n.cat === 'you' ? 'normal' : 'dim';
+      if (hiSet) return n.id === highlight ? 'active' : hiSet.has(n.id) ? 'normal' : 'dim';
+      if (filter !== 'all') return n.cat === 'you' || n.groups.includes(filter) ? 'normal' : 'dim';
+      return 'normal';
+    },
+    [matches, hiSet, highlight, filter],
+  );
+
+  const derived = useMemo<Node<UData>[]>(
+    () => [
+      { id: '__ring', type: 'ring', position: { x: 0, y: 0 }, data: { cat: 'hub', label: '', state: 'normal', focus: false, delay: 0 } as UData, selectable: false, draggable: false, focusable: false },
+      ...graph.nodes.map((n) => ({
+        id: n.id,
+        type: n.cat === 'you' ? 'you' : n.cat === 'hub' ? 'hub' : 'item',
+        position: { x: n.x, y: n.y },
+        draggable: n.cat !== 'you',
+        ariaLabel: l(n.label),
+        data: {
+          cat: n.cat,
+          hub: n.hub,
+          label: l(n.label),
+          sub: n.sub ? l(n.sub) : undefined,
+          score: n.score !== undefined ? Math.round(n.score) : undefined,
+          count: n.count,
+          state: stateOf(n),
+          focus: n.id === focusId && !selected,
+          delay: Math.min(n.order * 0.025, 1.1),
+          readiness: n.cat === 'you' ? insights.readiness : undefined,
+        },
+      })),
+    ],
+    [graph, l, stateOf, focusId, selected, insights.readiness],
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<UData>>([]);
+  useEffect(() => {
+    setNodes((prev) => {
+      const map = new Map(prev.map((p) => [p.id, p]));
+      return derived.map((d) => {
+        const p = map.get(d.id);
+        return p ? { ...p, data: d.data, draggable: d.draggable } : d;
+      });
+    });
+  }, [derived, setNodes]);
+
+  const edges = useMemo<Edge[]>(
+    () =>
+      graph.edges.map((e) => {
+        const on = hiSet ? hiSet.has(e.source) && hiSet.has(e.target) && (e.source === highlight || e.target === highlight) : false;
+        const dim = (hiSet && !on) || (matches && !(matches.has(e.source) || matches.has(e.target))) || (filter !== 'all' && !hiSet && !matches && !(byId.get(e.target)?.groups.includes(filter)));
+        const toGap = byId.get(e.target)?.cat === 'gap' || byId.get(e.source)?.cat === 'gap';
+        const base = e.kind === 'spoke' ? { stroke: 'var(--border-strong)', strokeWidth: 1.6 } : e.kind === 'branch' ? { stroke: 'var(--border-strong)', strokeWidth: 1.1 } : { stroke: 'var(--border-strong)', strokeWidth: 1, strokeDasharray: '3 5' };
+        return {
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          type: 'straight',
+          className: on ? 'edge-flow' : undefined,
+          style: on ? { stroke: toGap ? '#FB9002' : '#0AB46A', strokeWidth: 2.2, opacity: 1 } : { ...base, opacity: dim ? 0.08 : e.kind === 'link' ? 0.45 : 0.9 },
+          zIndex: on ? 1 : 0,
+        };
+      }),
+    [graph, hiSet, highlight, matches, filter, byId],
+  );
+
+  // Fit once nodes are measured, then centre on a requested focus.
+  useEffect(() => {
+    if (!initialized || didFit.current) return;
+    didFit.current = true;
+    rf.fitView({ padding: 0.14, duration: 0, nodes: graph.nodes.map((n) => ({ id: n.id })) });
+    const f = focusId ? byId.get(focusId) : null;
+    if (f) setTimeout(() => rf.setCenter(f.x * 0.6, f.y * 0.6, { zoom: 0.95, duration: 900 }), 700);
+  }, [initialized, rf, graph, focusId, byId]);
+
+  useEffect(() => {
+    if (!matches || matches.size === 0) return;
+    rf.fitView({ nodes: [...matches].map((id) => ({ id })), duration: 500, padding: 0.8, maxZoom: 1.15 });
+  }, [matches, rf]);
+
+  const focusNode = (id: string) => {
+    const n = byId.get(id);
+    if (!n) return;
+    setSelected(id);
+    setFocusId(null);
+    rf.setCenter(n.x, n.y, { zoom: 1.05, duration: 600 });
   };
 
-  const focusNode = (n: GraphNodeView) => {
-    setFilter('ALL');
-    select(n.id);
+  const reset = () => {
+    setFilter('all');
     setQuery('');
-    setSearchOpen(false);
-    setTimeout(() => graphRef.current?.focus(n.id), 50);
+    setSelected(null);
+    setHover(null);
+    setFocusId(null);
+    setNodes(derived);
+    if (params.get('focus')) setParams({}, { replace: true });
+    setTimeout(() => rf.fitView({ padding: 0.14, duration: 600, nodes: graph.nodes.map((n) => ({ id: n.id })) }), 30);
   };
 
-  if (error) return <ErrorState error={error} onRetry={() => void refetch()} />;
-
-  const gapCount = data?.nodes.filter((n) => n.type === 'GAP').length ?? 0;
+  const gaps = graph.nodes.filter((n) => n.cat === 'gap').length;
+  const focusNodeData = focusId ? byId.get(focusId) : null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-green-strong dark:text-green">{t('universe.eyebrow')}</p>
-          <h1 className="mt-1 text-[28px] font-bold leading-tight sm:text-[32px]">{t('universe.title')}</h1>
-          {data && (
-            <p className="mt-1 text-[14px] text-muted-foreground">
-              {t('universe.stats', { nodes: data.nodes.length, edges: data.edges.length, gaps: tn('universe.gaps', gapCount) })}
-              {data.updatedAt ? t('universe.updated', { time: relative(new Date(Math.max(new Date(data.updatedAt).getTime(), dataUpdatedAt - 1000)).toISOString()) }) : ''}
-            </p>
-          )}
-        </div>
-        <div className="relative w-full lg:w-80">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSearchOpen(true);
-            }}
-            onFocus={() => setSearchOpen(true)}
-            onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && matches[0]) focusNode(matches[0]);
-            }}
-            placeholder={t('universe.search')}
-            aria-label={t('universe.searchLabel')}
-            className="h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-3 text-sm shadow-[0_1px_2px_rgba(16,23,20,0.04)] outline-none focus:border-green focus:ring-4 focus:ring-[var(--ring)]"
-          />
-          {searchOpen && matches.length > 0 && (
-            <ul className="absolute inset-x-0 top-12 z-20 overflow-hidden rounded-xl border border-border bg-surface p-1 shadow-pop" role="listbox">
-              {matches.map((n) => (
-                <li key={n.id}>
-                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => focusNode(n)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2">
-                    <span className="size-2.5 shrink-0 rounded-full" style={{ background: nodeColor(n.type, dark) }} />
-                    <span className="flex-1 truncate">{n.label}</span>
-                    <span className="text-xs text-subtle-foreground">{labels.nodeType(n.type)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        stage={t('Explore', 'Eksplorasi')}
+        eyebrow="Career Universe"
+        title={t('Everything connected to your career', 'Semua yang terhubung dengan kariermu')}
+        description={t('{n} nodes · {e} connections · {g} open gaps. Hover to trace connections, click to see why it matters.', '{n} node · {e} koneksi · {g} gap terbuka. Arahkan kursor untuk melihat koneksi, klik untuk melihat alasannya.', {
+          n: graph.nodes.length,
+          e: graph.edges.length,
+          g: gaps,
+        })}
+        actions={<SearchInput value={query} onChange={setQuery} placeholder={t('Search your Universe…', 'Cari di Universe-mu…')} className="w-full sm:w-72" count={matches?.size} />}
+      />
+      <FilterChips label={t('Filter the universe', 'Filter universe')} value={filter} onChange={(v) => { setFilter(v); setSelected(null); setFocusId(null); }} options={FILTERS.map((f) => ({ value: f.value, label: l(f) }))} />
 
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 scrollbar-thin" role="tablist" aria-label={t('universe.filterLabel')}>
-        {UNIVERSE_FILTERS.map((f) => (
-          <button
-            key={f.id}
-            role="tab"
-            aria-selected={filter === f.id}
-            onClick={() => setFilter(f.id)}
-            className={cn(
-              'inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-[13px] font-medium transition',
-              filter === f.id ? 'border-foreground bg-foreground text-background' : 'border-border bg-surface text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {labels.filter(f.id, f.label)}
-            <span className={cn('tabular text-[11.5px]', filter === f.id ? 'text-background/70' : 'text-subtle-foreground')}>{counts[f.id] ?? 0}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="card relative h-[calc(100dvh-300px)] min-h-[460px] overflow-hidden lg:h-[calc(100dvh-268px)]">
-        <div className="absolute inset-0 grid-dots opacity-60" aria-hidden />
-        {isLoading || !data ? (
-          <LoadingState label={t('universe.loading')} className="absolute inset-0" />
-        ) : data.nodes.length <= 1 ? (
-          <EmptyState
-            icon={Network}
-            title={t('universe.emptyTitle')}
-            description={t('universe.emptyDesc')}
-            action={
-              <Button asChild>
-                <Link to="/onboarding">{t('universe.startOnboarding')}</Link>
-              </Button>
-            }
-          />
-        ) : (
-          <UniverseGraph ref={graphRef} data={data} filter={filter} selectedId={selectedId} onSelect={select} dark={dark} />
-        )}
+      <div className="relative h-[68dvh] min-h-[480px] overflow-hidden rounded-[24px] border border-border bg-surface shadow-card lg:h-[calc(100dvh-300px)] lg:min-h-[560px]">
+        <div className="pointer-events-none absolute inset-0 grid-dots opacity-50" aria-hidden />
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          nodeOrigin={[0.5, 0.5]}
+          minZoom={0.25}
+          maxZoom={2.2}
+          onNodeMouseEnter={(_, n) => n.id !== '__ring' && setHover(n.id)}
+          onNodeMouseLeave={() => setHover(null)}
+          onNodeClick={(_, n) => {
+            if (n.id === '__ring') return;
+            setSelected(n.id);
+            setFocusId(null);
+          }}
+          onPaneClick={() => {
+            setSelected(null);
+            setFocusId(null);
+          }}
+          nodesConnectable={false}
+          zoomOnScroll={false}
+          preventScrolling={false}
+          zoomOnDoubleClick={false}
+          elementsSelectable
+          proOptions={{ hideAttribution: true }}
+          aria-label={t('Interactive Career Universe graph', 'Grafik Career Universe interaktif')}
+          className="!bg-transparent"
+        />
 
         {/* Controls */}
-        <div className="absolute bottom-4 left-4 flex flex-col gap-1 rounded-xl border border-border bg-surface/95 p-1 shadow-card backdrop-blur">
-          <Tooltip content={t('universe.zoomIn')} side="right">
-            <Button variant="ghost" size="icon-sm" onClick={() => graphRef.current?.zoomIn()} aria-label={t('universe.zoomIn')}>
-              <Plus />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t('universe.zoomOut')} side="right">
-            <Button variant="ghost" size="icon-sm" onClick={() => graphRef.current?.zoomOut()} aria-label={t('universe.zoomOut')}>
-              <Minus />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t('universe.reset')} side="right">
-            <Button variant="ghost" size="icon-sm" onClick={() => graphRef.current?.reset()} aria-label={t('universe.reset')}>
-              <Maximize2 />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t('universe.refresh')} side="right">
-            <Button variant="ghost" size="icon-sm" onClick={() => rebuild.mutate()} aria-label={t('universe.refreshLabel')} disabled={rebuild.isPending}>
-              <RefreshCw className={cn(rebuild.isPending && 'animate-spin')} />
-            </Button>
-          </Tooltip>
+        <div className="absolute right-3 top-3 z-10 flex flex-col overflow-hidden rounded-2xl border border-border bg-surface/90 shadow-card backdrop-blur sm:right-4 sm:top-4">
+          {[
+            { icon: Plus, label: t('Zoom in', 'Perbesar'), fn: () => rf.zoomIn({ duration: 250 }) },
+            { icon: Minus, label: t('Zoom out', 'Perkecil'), fn: () => rf.zoomOut({ duration: 250 }) },
+            { icon: Maximize, label: t('Fit view', 'Sesuaikan tampilan'), fn: () => rf.fitView({ padding: 0.14, duration: 500, nodes: graph.nodes.map((n) => ({ id: n.id })) }) },
+            { icon: RotateCcw, label: t('Reset', 'Reset'), fn: reset },
+          ].map((c, i) => (
+            <Tooltip key={c.label} content={c.label} side="left">
+              <button type="button" onClick={c.fn} aria-label={c.label} className={cn('flex size-10 items-center justify-center text-muted-foreground transition hover:bg-surface-2 hover:text-foreground', i > 0 && 'border-t border-border')}>
+                <c.icon className="size-[17px]" />
+              </button>
+            </Tooltip>
+          ))}
         </div>
 
-        {/* Interaction hint */}
-        {data && data.nodes.length > 1 && !selectedId && (
-          <p className="pointer-events-none absolute bottom-4 left-1/2 hidden -translate-x-1/2 rounded-full border border-border bg-surface/90 px-3.5 py-1.5 text-[11.5px] text-muted-foreground shadow-card backdrop-blur md:block">
-            {t('universe.hint')}
-          </p>
-        )}
-
-        {/* Legend — hidden while the details drawer occupies the right side */}
-        <div
-          className={cn(
-            'absolute right-4 top-4 hidden max-w-[220px] rounded-xl border border-border bg-surface/95 p-3 text-[11.5px] shadow-card backdrop-blur',
-            selectedId ? 'md:hidden' : 'md:block',
-          )}
-        >
-          <p className="mb-2 font-semibold text-muted-foreground">{t('universe.legend')}</p>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-            {(['USER', 'CAREER_ROLE', 'SKILL', 'GAP', 'GOAL', 'QUEST', 'EXPERIENCE', 'OPPORTUNITY', 'EVENT', 'COURSE', 'BOOK', 'ROLE_MODEL'] as const).map((type) => (
-              <span key={type} className="flex items-center gap-1.5 truncate">
-                <span className="size-2.5 shrink-0 rounded-full" style={{ background: nodeColor(type, dark) }} />
-                {labels.nodeType(type)}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <AnimatePresence>{selectedId && <NodePanel key={selectedId} nodeId={selectedId} onClose={() => select(null)} onFocus={focusNode} />}</AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-function NodePanel({ nodeId, onClose, onFocus }: { nodeId: string; onClose: () => void; onFocus: (n: GraphNodeView) => void }) {
-  const { data, isLoading, error } = useNodeDetail(nodeId);
-  const { t } = useT();
-  return (
-    <motion.aside
-      initial={{ x: 40, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 40, opacity: 0 }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-x-2 bottom-2 z-10 max-h-[72%] overflow-y-auto rounded-2xl border border-border bg-surface shadow-pop scrollbar-thin md:inset-x-auto md:bottom-3 md:right-3 md:top-3 md:max-h-none md:w-[380px]"
-      aria-label={t('universe.nodeDetails')}
-    >
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/95 px-5 py-3 backdrop-blur">
-        <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t('universe.details')}</span>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t('universe.closeDetails')}>
-          <X />
-        </Button>
-      </div>
-      {error ? (
-        <ErrorState error={error} />
-      ) : isLoading || !data ? (
-        <div className="space-y-3 p-5">
-          <Skeleton className="h-5 w-24" />
-          <Skeleton className="h-7 w-3/4" />
-          <Skeleton className="h-20" />
-        </div>
-      ) : (
-        <NodeDetailBody detail={data} onFocus={onFocus} />
-      )}
-    </motion.aside>
-  );
-}
-
-function NodeDetailBody({ detail, onFocus }: { detail: NodeDetail; onFocus: (n: GraphNodeView) => void }) {
-  const { node, skill } = detail;
-  const navigate = useNavigate();
-  const openAgent = useUiStore((s) => s.openAgent);
-  const addSkill = useAddSkillToJourney();
-  const dark = useIsDark();
-  const { t, tn } = useT();
-  const labels = useLabels();
-  const color = nodeColor(node.type, dark);
-  const Icon = NODE_STYLE[node.type].icon;
-  const grouped = useMemo(() => {
-    const g = new Map<string, GraphNodeView[]>();
-    for (const c of detail.connections) {
-      const k = labels.relation(c.relationship);
-      g.set(k, [...(g.get(k) ?? []), c.node]);
-    }
-    return [...g.entries()];
-  }, [detail.connections, labels]);
-
-  return (
-    <div className="p-5">
-      <div className="flex items-center gap-2">
-        <span className="flex size-8 items-center justify-center rounded-lg" style={{ background: color, color: onNodeColor(color) }}>
-          <Icon className="size-4" />
-        </span>
-        <Badge tone={node.type === 'GAP' ? 'orange' : node.type === 'SKILL' ? 'green' : 'neutral'}>{labels.nodeType(node.type)}</Badge>
-        {node.source !== 'SYSTEM' && <Badge tone="outline">{node.source === 'AGENT' ? t('universe.addedByOrbit') : t('universe.addedByYou')}</Badge>}
-      </div>
-      <h2 className="mt-3 text-[22px] font-bold leading-tight">{node.label}</h2>
-      {node.description && <p className="mt-1 text-[13.5px] text-muted-foreground">{node.description}</p>}
-
-      {skill && (
-        <div className="mt-5 space-y-4">
-          <dl className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-surface-2 p-3">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t('universe.currentLevel')}</dt>
-              <dd className="mt-1 font-semibold">{labels.skillLevel(skill.currentLevel)}</dd>
-              <dd className="text-[12px] tabular text-muted-foreground">{skill.currentLevel} / 100</dd>
-            </div>
-            <div className="rounded-xl bg-surface-2 p-3">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t('universe.requiredLevel')}</dt>
-              <dd className="mt-1 font-semibold">{skill.requiredLevel != null ? labels.skillLevel(skill.requiredLevel) : '—'}</dd>
-              <dd className="text-[12px] tabular text-muted-foreground">{skill.requiredLevel ?? '—'} / 100</dd>
-            </div>
-          </dl>
-          {skill.requiredLevel && <Progress value={(skill.currentLevel / skill.requiredLevel) * 100} tone={skill.isGap ? 'orange' : 'green'} label={t('universe.progressToRequired')} />}
-          <dl className="space-y-2.5 text-[13.5px]">
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{t('universe.relatedCareer')}</dt>
-              <dd className="font-medium">{skill.relatedCareer ?? '—'}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">{t('universe.requiredBy')}</dt>
-              <dd className="font-medium">
-                {tn('universe.matchingJobs', skill.requiredByJobs)}
-              </dd>
-            </div>
-          </dl>
-          <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t('universe.resources')}</p>
-            <div className="grid grid-cols-2 gap-2 text-[13px]">
-              {(
-                [
-                  { icon: GraduationCap, n: skill.resources.courses, l: 'universe.res.courses', tab: 'growth' },
-                  { icon: BookOpen, n: skill.resources.books, l: 'universe.res.books', tab: 'knowledge' },
-                  { icon: FileText, n: skill.resources.papers, l: 'universe.res.papers', tab: 'knowledge&kind=papers' },
-                  { icon: CalendarDays, n: skill.resources.events, l: 'universe.res.events', tab: 'growth' },
-                ] as const
-              ).map((r) => (
-                <Link key={r.l} to={`/app/discover?tab=${r.tab}`} className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-2 hover:border-green">
-                  <r.icon className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="tabular font-semibold">{r.n}</span> <span className="truncate">{t(r.l)}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {detail.recommendedAction && (
-        <div className="mt-5 rounded-xl border border-green/30 bg-muted-green/50 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-green-strong dark:text-green">{t('universe.recommended')}</p>
-          <p className="mt-1 font-semibold">{detail.recommendedAction.title}</p>
-          <p className="mt-1 text-[13px] text-muted-foreground">{detail.recommendedAction.reason}</p>
-          <p className="mt-1 text-[12.5px] font-medium text-green-strong dark:text-green">{detail.recommendedAction.expectedImpact}</p>
-          <Button
-            className="mt-3 w-full"
-            loading={addSkill.isPending}
-            onClick={() => {
-              const a = detail.recommendedAction!;
-              if (a.action?.type === 'ADD_SKILL_TO_JOURNEY') addSkill.mutate(String(a.action.payload.skillSlug));
-              else navigate(a.actionUrl);
-            }}
-          >
-            {detail.recommendedAction.actionLabel} <ArrowRight />
-          </Button>
-        </div>
-      )}
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {detail.link && (
-          <Button variant="secondary" size="sm" onClick={() => navigate(detail.link!.url)}>
-            {node.type === 'OPPORTUNITY' ? <BriefcaseBusiness /> : <ArrowRight />} {detail.link.label}
-          </Button>
-        )}
-        <Button variant="ghost" size="sm" onClick={() => openAgent(t('agent.prompt.whyNode', { label: node.label }))}>
-          <BrainCircuit /> {t('common.askOrbit')}
-        </Button>
-      </div>
-
-      {grouped.length > 0 && (
-        <div className="mt-6 border-t border-border pt-4">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t('universe.connections', { count: detail.connections.length })}</p>
-          <div className="space-y-3">
-            {grouped.map(([rel, nodes]) => (
-              <div key={rel}>
-                <p className="mb-1 text-[12px] text-subtle-foreground">{rel}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {nodes.slice(0, 10).map((n) => (
-                    <button key={n.id} onClick={() => onFocus(n)} className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[12px] hover:border-green">
-                      <span className="size-2 shrink-0 rounded-full" style={{ background: nodeColor(n.type, dark) }} />
-                      <span className="truncate">{n.label}</span>
-                    </button>
+        {/* Legend */}
+        <div className="absolute bottom-3 left-3 z-10 sm:bottom-4 sm:left-4">
+          <AnimatePresence initial={false} mode="wait">
+            {legend ? (
+              <motion.div key="legend" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} className="w-[220px] rounded-2xl border border-border bg-surface/92 p-3.5 shadow-card backdrop-blur">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[11.5px] font-bold uppercase tracking-wider text-subtle-foreground">{t('Legend', 'Legenda')}</span>
+                  <button type="button" onClick={() => setLegend(false)} aria-label={t('Hide legend', 'Sembunyikan legenda')} className="rounded-md text-subtle-foreground hover:text-foreground">
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-[12px] font-medium">
+                  {[
+                    { c: 'size-3 rounded-full bg-green', l: t('Skill', 'Skill') },
+                    { c: 'size-3 rounded-full bg-orange ring-2 ring-orange/30 ring-offset-1 ring-offset-surface', l: t('Skill gap', 'Gap skill') },
+                    { c: 'size-3 rounded-[4px] bg-[#13201a] dark:bg-[#e7efea]', l: t('Job', 'Pekerjaan') },
+                    { c: 'size-2.5 rotate-45 rounded-[3px] bg-[#0f8a55]', l: t('Course', 'Kursus') },
+                    { c: 'size-3 rounded-full bg-violet', l: t('Mentor', 'Mentor') },
+                    { c: 'size-3 rounded-[4px] border-2 border-info', l: t('Event', 'Event') },
+                    { c: 'size-3 rounded-[4px] bg-info', l: t('Experience', 'Pengalaman') },
+                    { c: 'size-3 rounded-[4px] bg-violet/80', l: t('Project', 'Proyek') },
+                  ].map((x) => (
+                    <span key={x.l} className="flex items-center gap-2">
+                      <span className={x.c} aria-hidden /> {x.l}
+                    </span>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              </motion.div>
+            ) : (
+              <motion.button key="legend-btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} type="button" onClick={() => setLegend(true)} className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface/90 px-3 text-[12.5px] font-semibold shadow-card backdrop-blur">
+                <Info className="size-3.5" /> {t('Legend', 'Legenda')}
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+
+        {/* Focus callout */}
+        <AnimatePresence>
+          {focusNodeData && !selected && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.4, ease, delay: 0.9 }}
+              className="absolute inset-x-3 bottom-3 z-20 mx-auto max-w-md sm:bottom-4"
+            >
+              <div className="flex items-center gap-3 rounded-2xl border border-orange/30 bg-surface p-3.5 shadow-pop">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange text-white shadow-orange">
+                  <Sparkles className="size-[18px]" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11.5px] font-bold uppercase tracking-wider text-orange-strong dark:text-orange">{t('Start here', 'Mulai dari sini')}</div>
+                  <div className="truncate text-[14px] font-semibold">
+                    {focusNodeData.refId && SKILL_BY_ID[focusNodeData.refId] ? t('{s} is your biggest opportunity', '{s} adalah peluang terbesarmu', { s: l(focusNodeData.label) }) : l(focusNodeData.label)}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => focusNode(focusNodeData.id)}>
+                  {t('Open', 'Buka')} <ArrowRight />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {matches && matches.size === 0 && (
+          <div className="absolute inset-x-0 top-4 z-10 mx-auto w-fit rounded-full border border-border bg-surface px-4 py-2 text-[13px] font-medium shadow-card">{t('Nothing in your Universe matches “{q}”', 'Tidak ada yang cocok dengan “{q}”', { q: query })}</div>
+        )}
+      </div>
+      <p className="text-center text-[12.5px] text-subtle-foreground">{t('Ctrl + scroll or pinch to zoom · drag to pan · click a node for details', 'Ctrl + scroll atau cubit untuk zoom · geser untuk pindah · klik node untuk detail')}</p>
+
+      <NodeDrawer node={selected ? (byId.get(selected) ?? null) : null} onClose={() => setSelected(null)} onFocus={focusNode} allNodes={graph.nodes} />
     </div>
   );
 }
