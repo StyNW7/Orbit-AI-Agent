@@ -49,10 +49,10 @@ export function scrollToId(id: string) {
 }
 
 const LINKS = [
+  { id: 'mission', en: 'Our Purpose', idn: 'Tujuan' },
   { id: 'how', en: 'How It Works', idn: 'Cara Kerja' },
   { id: 'universe', en: 'Career Universe', idn: 'Career Universe' },
-  { id: 'capabilities', en: 'Capabilities', idn: 'Kapabilitas' },
-  { id: 'impact', en: 'Impact', idn: 'Dampak' },
+  { id: 'sdg', en: 'SDG 4', idn: 'SDG 4' },
   { id: 'campus', en: 'For Campus', idn: 'Untuk Kampus', to: '/campus' },
   { id: 'faq', en: 'FAQ', idn: 'FAQ' },
 ];

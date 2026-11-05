@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react';
 import { Logo, OrbitMark } from '@/components/brand/brand';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/form';
@@ -13,6 +14,7 @@ import { ease } from '@/lib/motion';
 export default function SignInPage() {
   const mode = useOrbit((s) => s.mode);
   const loadDemo = useOrbit((s) => s.loadDemo);
+  const profile = useOrbit((s) => s.profile);
   const navigate = useNavigate();
   const { t } = useT();
   const [email, setEmail] = useState('');
@@ -25,10 +27,20 @@ export default function SignInPage() {
     const e: typeof errors = {};
     if (!/^\S+@\S+\.\S+$/.test(email)) e.email = t('Enter a valid email address', 'Masukkan alamat email yang valid');
     if (password.length < 6) e.password = t('Password must be at least 6 characters', 'Password minimal 6 karakter');
+    if (!e.email && mode !== 'none' && profile?.email && profile.email.toLowerCase() !== email.trim().toLowerCase())
+      e.email = t('No Orbit on this device uses this email. Try {m}, or build a new Orbit.', 'Tidak ada Orbit di perangkat ini dengan email tersebut. Coba {m}, atau bangun Orbit baru.', { m: profile.email });
     setErrors(e);
     if (Object.keys(e).length) return;
     setLoading(true);
-    setTimeout(() => navigate(mode === 'none' ? '/start' : '/app'), 700);
+    setTimeout(() => {
+      if (mode === 'none') {
+        toast(t('No Orbit on this device yet', 'Belum ada Orbit di perangkat ini'), { description: t('Let’s build yours — it takes about two minutes.', 'Ayo bangun Orbit-mu — hanya sekitar dua menit.') });
+        navigate('/start');
+      } else {
+        toast.success(t('Welcome back, {n}', 'Selamat datang kembali, {n}', { n: profile?.name.split(' ')[0] ?? '' }));
+        navigate('/app');
+      }
+    }, 600);
   };
 
   return (
@@ -48,7 +60,7 @@ export default function SignInPage() {
                 <span className={`absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full ${i === 1 ? 'bg-orange' : 'bg-green'}`} />
               </motion.div>
             ))}
-            <div className="orbit-gradient absolute inset-[118px] flex items-center justify-center rounded-full font-display text-[13px] font-bold shadow-[0_0_60px_rgba(10,180,106,0.6)]">YOU</div>
+            <div className="orbit-gradient absolute inset-[118px] flex items-center justify-center rounded-full font-display text-[13px] font-bold shadow-[0_0_60px_rgba(10,180,106,0.6)]">{t('YOU', 'KAMU')}</div>
           </div>
           <blockquote className="max-w-md font-display text-[30px] font-bold leading-tight tracking-[-0.02em]">{t('Your career is not a straight line.', 'Kariermu bukan garis lurus.')}</blockquote>
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/65">
@@ -111,6 +123,10 @@ export default function SignInPage() {
               {t('Sign in', 'Masuk')} {!loading && <ArrowRight />}
             </Button>
           </form>
+          <p className="mt-4 flex items-start gap-2 rounded-xl bg-surface-2/70 px-3 py-2.5 text-[12.5px] leading-snug text-muted-foreground">
+            <ShieldCheck className="mt-px size-4 shrink-0 text-green" aria-hidden />
+            {t('Your Orbit is stored privately in this browser. Nothing leaves your device.', 'Orbit-mu tersimpan privat di browser ini. Tidak ada data yang keluar dari perangkatmu.')}
+          </p>
           <p className="mt-6 text-center text-[14px] text-muted-foreground">
             {t('New to Orbit?', 'Baru di Orbit?')}{' '}
             <Link to="/start" className="font-semibold text-green-strong hover:underline dark:text-green">

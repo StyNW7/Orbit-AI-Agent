@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bookmark, BookmarkCheck, CalendarClock, Check, Clock, MapPin, Sparkles, Star, Target, Users } from 'lucide-react';
 import { MatchRing } from '@/components/brand/brand';
@@ -57,6 +58,7 @@ export function SaveButton({ id, size = 'md' }: { id: string; size?: 'sm' | 'md'
 
 export function OpportunityCard({ o, m, onOpen, index = 0 }: { o: Opportunity; m: Match; onOpen: () => void; index?: number }) {
   const { t, l } = useT();
+  const navigate = useNavigate();
   useOrbit((s) => s.quests.length);
   const inJourney = questForOpportunity(o.id);
   const reason = m.closes ? t('Closes your {g} gap', 'Menutup gap {g}-mu', { g: l(SKILL_BY_ID[m.closes].name) }) : m.reasons[0] ? l(m.reasons[0]) : l(o.summary);
@@ -122,7 +124,8 @@ export function OpportunityCard({ o, m, onOpen, index = 0 }: { o: Opportunity; m
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-3.5 text-[12.5px]">
+      <div className="min-h-4 grow" aria-hidden />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-3.5 text-[12.5px]">
         <span className="text-muted-foreground">
           {t('Career impact', 'Dampak karier')}: <span className={cn('font-bold', o.impact === 'high' ? 'text-green-strong dark:text-green' : 'text-foreground')}>{l(IMPACT_LABEL[o.impact])}</span>
         </span>
@@ -147,18 +150,19 @@ export function OpportunityCard({ o, m, onOpen, index = 0 }: { o: Opportunity; m
         )}
       </div>
 
-      <div className="mt-4 flex gap-2">
+      {/* Actions wrap onto two full-width rows when the card is too narrow for both labels. */}
+      <div className="mt-4 flex flex-wrap gap-2 [&>*]:min-w-0 [&>*]:flex-[1_1_auto]">
         {inJourney ? (
-          <Button size="sm" variant="soft" className="flex-1" disabled>
+          <Button size="sm" variant="soft" onClick={() => navigate(`/app/journey?quest=${inJourney.id}`)}>
             <Check /> {t('In Journey', 'Di Journey')}
           </Button>
         ) : (
-          <Button size="sm" className="flex-1" onClick={() => requestAddToJourney(o.id)}>
+          <Button size="sm" onClick={() => requestAddToJourney(o.id)}>
             <Target /> {t('Add to Journey', 'Tambah ke Journey')}
           </Button>
         )}
-        <Button size="sm" variant="secondary" className="flex-1" onClick={onOpen}>
-          {t('Why It Fits', 'Kenapa Cocok')}
+        <Button size="sm" variant="secondary" onClick={onOpen}>
+          <Sparkles className="text-green" /> {t('Why It Fits', 'Kenapa Cocok')}
         </Button>
       </div>
     </motion.article>

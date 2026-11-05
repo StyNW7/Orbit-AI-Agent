@@ -97,7 +97,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <PageHeader eyebrow={t('Profile & settings', 'Profil & pengaturan')} title={t('Your Orbit, your way', 'Orbit-mu, caramu')} description={t('Changes update your Career Intelligence instantly.', 'Perubahan langsung memperbarui Career Intelligence-mu.')} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
           {/* Profile */}
           <Card className="p-5 sm:p-6">

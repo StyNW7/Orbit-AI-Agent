@@ -93,12 +93,12 @@ export default function DiscoverPage() {
       {view === 'explore' ? (
         <>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <SearchInput value={query} onChange={setQuery} placeholder={t('Search title, company or skill…', 'Cari judul, perusahaan, atau skill…')} className="lg:w-[380px]" count={list.length} />
-            <div className="flex items-center gap-2 lg:ml-auto">
+            <SearchInput value={query} onChange={setQuery} placeholder={t('Search title, company or skill…', 'Cari judul, perusahaan, atau skill…')} className="w-full lg:w-[380px]" count={list.length} />
+            <div className="flex items-center gap-2 lg:ml-auto [&>div]:flex-1 lg:[&>div]:flex-none">
               <label htmlFor="sort" className="shrink-0 text-[13px] font-semibold text-muted-foreground">
                 {t('Sort by', 'Urutkan')}
               </label>
-              <Select id="sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-10 w-48">
+              <Select id="sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-10 w-full lg:w-48">
                 <option value="match">{t('Best match', 'Paling cocok')}</option>
                 <option value="impact">{t('Highest impact', 'Dampak tertinggi')}</option>
                 <option value="newest">{t('Newest', 'Terbaru')}</option>

@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts';
-import { Award, BriefcaseBusiness, Check, FolderKanban, GraduationCap, Layers, Lightbulb, Mic, Orbit, Palette, RefreshCw, Target, TrendingUp, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Award, BriefcaseBusiness, Check, FolderKanban, GraduationCap, Layers, Lightbulb, Mic, Orbit, Palette, RefreshCw, Target, TrendingUp, type LucideIcon } from 'lucide-react';
 import { ReadinessRing } from '@/components/brand/brand';
 import { Badge, Card, ProgressBar } from '@/components/ui/primitives';
 import { Button } from '@/components/ui/button';
@@ -112,7 +112,7 @@ export default function IntelligencePage() {
             </motion.div>
 
             {/* Insights */}
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-3 [&>*]:min-w-0">
               <InsightCard
                 icon={Award}
                 tone="green"
@@ -170,7 +170,7 @@ export default function IntelligencePage() {
                   const weak = d === insights.priorityGap.dim;
                   return (
                     <motion.div key={d} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05, duration: 0.4, ease }}>
-                      <Card interactive className="h-full p-5">
+                      <Card interactive className="flex h-full flex-col p-5">
                         <div className="flex items-center justify-between">
                           <span className={cn('flex size-10 items-center justify-center rounded-xl', weak ? 'bg-muted-orange text-orange' : 'bg-muted-green text-green-strong dark:text-green')}>
                             <Icon className="size-[18px]" />
@@ -179,9 +179,10 @@ export default function IntelligencePage() {
                         </div>
                         <div className="mt-3 font-display text-[16px] font-bold">{l(DIM_LONG[d])}</div>
                         <ProgressBar value={score} size="sm" tone={weak ? 'orange' : 'green'} className="mt-2.5" label={l(DIM_LONG[d])} />
-                        <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{l(DIM_WHY[d])}</p>
-                        <Link to={DIM_MOVE[d].to} className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-green-strong hover:underline dark:text-green">
-                          {l(DIM_MOVE[d])} →
+                        <p className="mt-3 flex-1 text-[13px] leading-relaxed text-muted-foreground">{l(DIM_WHY[d])}</p>
+                        <Link to={DIM_MOVE[d].to} className="group mt-4 self-start rounded-md text-[13px] font-semibold leading-snug text-green-strong hover:underline dark:text-green">
+                          {l(DIM_MOVE[d])}
+                          <ArrowRight className="ml-1 inline size-3.5 align-[-2px] transition-transform group-hover:translate-x-0.5" aria-hidden />
                         </Link>
                       </Card>
                     </motion.div>
@@ -196,19 +197,19 @@ export default function IntelligencePage() {
                 <div className="p-5 sm:p-6">
                   <SectionHeader className="mb-0" icon={Layers} title={t('Skill gap analysis', 'Analisis gap skill')} description={t('Ranked by importance for {role} and demand across matching openings.', 'Diurutkan berdasarkan kepentingan untuk {role} dan permintaan di lowongan yang cocok.', { role: l(role.name) })} />
                 </div>
-                <div className="hidden grid-cols-[minmax(0,1.6fr)_1fr_0.7fr_0.6fr_auto] gap-4 border-y border-border bg-surface-2/60 px-6 py-2.5 text-[11.5px] font-bold uppercase tracking-wider text-subtle-foreground md:grid">
+                <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_184px] gap-4 border-y border-border bg-surface-2/60 px-6 py-2.5 text-[11.5px] font-bold uppercase tracking-wider text-subtle-foreground lg:grid">
                   <span>{t('Skill', 'Skill')}</span>
                   <span>{t('You → Target', 'Kamu → Target')}</span>
                   <span>{t('Demand', 'Permintaan')}</span>
                   <span>{t('Impact', 'Dampak')}</span>
-                  <span className="w-[140px] text-right">{t('Action', 'Aksi')}</span>
+                  <span className="text-right">{t('Action', 'Aksi')}</span>
                 </div>
-                <ul className="divide-y divide-border">
+                <ul className="divide-y divide-border border-t border-border lg:border-t-0">
                   {skills.map((g) => {
                     const inJourney = g.course ? questForOpportunity(g.course.id) : undefined;
                     return (
-                      <li key={g.skill} className="grid gap-3 px-5 py-4 sm:px-6 md:grid-cols-[minmax(0,1.6fr)_1fr_0.7fr_0.6fr_auto] md:items-center md:gap-4">
-                        <div className="min-w-0">
+                      <li key={g.skill} className="grid grid-cols-2 items-center gap-x-4 gap-y-3 px-5 py-4 sm:px-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_184px]">
+                        <div className="col-span-2 min-w-0 lg:col-span-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <Link to={`/app/universe?focus=skill:${g.skill}`} className="text-[14.5px] font-semibold hover:text-green-strong dark:hover:text-green">
                               {l(SKILL_BY_ID[g.skill].name)}
@@ -218,9 +219,9 @@ export default function IntelligencePage() {
                           </div>
                           <div className="mt-0.5 text-[12.5px] text-muted-foreground">{t('Relevance {r}%', 'Relevansi {r}%', { r: Math.round(g.relevance) })}</div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <LevelDots level={g.level} target={g.target} />
-                          <span className="text-[12.5px] text-muted-foreground">
+                          <span className="text-[12.5px] leading-snug text-muted-foreground">
                             {l(LEVEL_LABEL[g.level])} → {l(LEVEL_LABEL[g.target])}
                           </span>
                         </div>
@@ -228,7 +229,7 @@ export default function IntelligencePage() {
                           <span className="tabular font-semibold text-foreground">{g.demand}</span> {t('openings', 'lowongan')}
                         </div>
                         <div>{g.isGap ? <ImpactPill value={g.impact} /> : <span className="text-[12.5px] text-subtle-foreground">—</span>}</div>
-                        <div className="md:w-[140px] md:text-right">
+                        <div className="flex justify-end lg:justify-end">
                           {g.isGap && g.course ? (
                             inJourney ? (
                               <Button size="xs" variant="soft" asChild>
@@ -292,7 +293,7 @@ function InsightCard({
         </div>
         <div className="mt-3 font-display text-[21px] font-bold tracking-tight">{title}</div>
         <p className="mt-1.5 flex-1 text-[13.5px] leading-relaxed text-muted-foreground">{body}</p>
-        {action && <div className="mt-4">{action}</div>}
+        {action && <div className="mt-4 [&>*]:h-auto [&>*]:min-h-8 [&>*]:max-w-full [&>*]:whitespace-normal [&>*]:py-1.5 [&>*]:text-left">{action}</div>}
       </Card>
     </motion.div>
   );

@@ -97,7 +97,7 @@ function QuestCardView({ q, dragging, highlight, onOpen, handleProps }: { q: Que
           </span>
         </div>
       )}
-      <div className="mt-3 flex items-center gap-3 pl-6 text-[12px]">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pl-6 text-[12px]">
         <span className="tabular inline-flex items-center gap-1 font-semibold text-orange-strong dark:text-orange">
           <Zap className="size-3" />
           {q.xp} XP
@@ -141,9 +141,10 @@ function Column({ status, quests, over, highlight, onOpen, onAdd }: { status: Qu
   return (
     <section
       ref={setNodeRef}
+      id={`board-col-${status}`}
       aria-label={l(STATUS_LABEL[status])}
       className={cn(
-        'flex w-[84vw] max-w-[380px] shrink-0 snap-center flex-col rounded-[22px] border bg-surface-2/50 p-3 transition-[background-color,border-color] sm:w-[340px] lg:w-auto lg:max-w-none',
+        'flex w-[84vw] max-w-[380px] shrink-0 snap-center flex-col rounded-[22px] border bg-surface-2/50 p-3 transition-[background-color,border-color] sm:w-[320px] md:w-auto md:max-w-none',
         over ? 'border-green/50 bg-muted-green/50' : 'border-border',
       )}
     >
@@ -179,6 +180,7 @@ function Column({ status, quests, over, highlight, onOpen, onAdd }: { status: Qu
 
 export function Board({ highlight, onOpen, onAdd }: { highlight: string | null; onOpen: (id: string) => void; onAdd: () => void }) {
   const quests = useOrbit((s) => s.quests);
+  const { l } = useT();
   const [active, setActive] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<QuestStatus | null>(null);
   const sensors = useSensors(
@@ -212,7 +214,22 @@ export function Board({ highlight, onOpen, onAdd }: { highlight: string | null; 
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => { setActive(null); setOverCol(null); }}>
-      <div data-lenis-prevent className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0">
+      {/* Mobile: columns scroll sideways, so give a quick way to jump between them. */}
+      <div className="mb-3 grid grid-cols-3 gap-1.5 md:hidden">
+        {COLUMNS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => document.getElementById(`board-col-${c}`)?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })}
+            className="flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-surface text-[12.5px] font-semibold text-muted-foreground shadow-xs transition active:scale-95"
+          >
+            <span className={cn('size-1.5 rounded-full', COL_STYLE[c].dot)} />
+            {l(STATUS_LABEL[c])}
+            <span className="tabular text-subtle-foreground">{columns[c].length}</span>
+          </button>
+        ))}
+      </div>
+      <div data-lenis-prevent className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:items-stretch md:gap-3 md:overflow-visible md:px-0 xl:gap-4">
         {COLUMNS.map((c) => (
           <Column key={c} status={c} quests={columns[c]} over={overCol === c && activeQuest?.status !== c} highlight={highlight} onOpen={onOpen} onAdd={onAdd} />
         ))}

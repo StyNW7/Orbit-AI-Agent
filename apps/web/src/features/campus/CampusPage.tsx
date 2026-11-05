@@ -295,7 +295,7 @@ function Dashboard() {
               .map((p) => {
                 const on = planned.includes(p.id);
                 return (
-                  <li key={p.id} className="grid gap-3 p-5 sm:grid-cols-[minmax(0,1.5fr)_1fr_0.7fr_auto] sm:items-center sm:px-6">
+                  <li key={p.id} className="grid gap-3 p-5 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.7fr)_150px] sm:items-center sm:px-6">
                     <div className="flex min-w-0 items-start gap-3">
                       <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', on ? 'bg-green text-white' : 'bg-muted-green text-green-strong dark:text-green')}>
                         {on ? <Check className="size-[18px]" /> : <HeartHandshake className="size-[18px]" />}
@@ -315,6 +315,7 @@ function Dashboard() {
                     </div>
                     <Button
                       size="sm"
+                      className="w-full"
                       variant={on ? 'soft' : 'secondary'}
                       onClick={() => {
                         togglePlan(p.id);

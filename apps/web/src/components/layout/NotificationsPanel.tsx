@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { Award, BellOff, BellRing, Bookmark, BookmarkCheck, CalendarClock, CheckCheck, Clock, GraduationCap, Route, Sparkles, Trash2, Users, X, type LucideIcon } from 'lucide-react';
-import { Sheet } from '@/components/ui/overlays';
+import { Sheet, Tooltip } from '@/components/ui/overlays';
 import { Segmented } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/layout-blocks';
@@ -56,8 +56,10 @@ export function NotificationsPanel() {
       description={unread ? t('{n} need your attention', '{n} perlu perhatianmu', { n: unread }) : t('You’re all caught up', 'Semua sudah terbaca')}
       width={440}
     >
-      <div className="sticky top-0 z-10 -mx-1 flex items-center justify-between gap-2 bg-surface px-1 pb-3">
+      <div className="sticky top-0 z-10 -mx-1 flex items-center gap-2 bg-surface px-1 pb-3">
         <Segmented
+          full
+          className="min-w-0 flex-1"
           size="sm"
           label={t('Filter notifications', 'Filter notifikasi')}
           value={tab}
@@ -69,9 +71,11 @@ export function NotificationsPanel() {
           ]}
         />
         {tab !== 'reminders' && unread > 0 && (
-          <Button size="xs" variant="ghost" onClick={markAll}>
-            <CheckCheck /> {t('Mark all read', 'Tandai semua')}
-          </Button>
+          <Tooltip content={t('Mark all as read', 'Tandai semua sudah dibaca')}>
+            <Button size="icon-sm" variant="secondary" onClick={markAll} aria-label={t('Mark all as read', 'Tandai semua sudah dibaca')}>
+              <CheckCheck />
+            </Button>
+          </Tooltip>
         )}
       </div>
 

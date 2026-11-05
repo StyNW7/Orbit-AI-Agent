@@ -69,7 +69,7 @@ export function UniversePreview() {
   return (
     <Section id="universe">
       <div className="container-orbit">
-        <div className="grid items-end gap-6 lg:grid-cols-[1.2fr_1fr]">
+        <div className="grid items-end gap-6 lg:grid-cols-[1.2fr_1fr] [&>*]:min-w-0">
           <SectionIntro eyebrow="Career Universe" title={t('Everything connected to your career — in one living map.', 'Semua yang terhubung dengan kariermu — dalam satu peta hidup.')} desc={t('Skills, opportunities, learning and people orbit around you. Click a node to see why it matters.', 'Skill, peluang, pembelajaran, dan orang mengorbit di sekitarmu. Klik node untuk melihat kenapa itu penting.')} />
           <div className="lg:pb-2">
             <FilterChips

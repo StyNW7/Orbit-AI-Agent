@@ -1,3 +1,4 @@
+import { useGuide } from './guide';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useMemo } from 'react';
@@ -189,14 +190,23 @@ export const useOrbit = create<OrbitState>()(
     (set, get) => ({
       ...EMPTY,
 
-      loadDemo: () => set(demoData()),
-      completeOnboarding: (profile, demo) => set(demo ? demoData(profile) : customData(profile)),
+      loadDemo: () => {
+        useGuide.getState().reset();
+        set(demoData());
+      },
+      completeOnboarding: (profile, demo) => {
+        useGuide.getState().reset();
+        set(demo ? demoData(profile) : customData(profile));
+      },
       updateProfile: (patch) => {
         const p = get().profile;
         if (!p) return;
         set({ profile: { ...p, ...patch } });
       },
-      signOut: () => set({ ...EMPTY }),
+      signOut: () => {
+        useGuide.getState().reset();
+        set({ ...EMPTY });
+      },
       resetDemo: () => set({ ...demoData(), agent: [] }),
 
       addQuest: (q) =>

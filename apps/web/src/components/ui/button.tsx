@@ -18,7 +18,7 @@ export const buttonVariants = cva(
           'bg-green text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_8px_20px_-10px_rgba(10,180,106,0.85)] hover:-translate-y-px hover:bg-green-strong hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_14px_28px_-12px_rgba(10,180,106,0.9)]',
         accent:
           'bg-orange text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_-10px_rgba(251,144,2,0.85)] hover:-translate-y-px hover:bg-orange-strong',
-        gradient: 'orbit-gradient text-white shadow-[0_10px_26px_-12px_rgba(10,180,106,0.9)] hover:-translate-y-px hover:brightness-[1.05]',
+        gradient: 'orbit-gradient-button text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_26px_-12px_rgba(10,180,106,0.9)] hover:-translate-y-px hover:brightness-[1.06]',
         secondary:
           'border border-border bg-surface text-foreground shadow-xs hover:-translate-y-px hover:border-border-strong hover:bg-surface-2 hover:shadow-card',
         soft: 'bg-muted-green text-green-strong hover:bg-[color-mix(in_oklab,var(--muted-green),var(--orbit-green)_14%)] dark:text-green',

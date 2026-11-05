@@ -62,7 +62,7 @@ function Universe() {
   const [filter, setFilter] = useState<UFilter>('all');
   const [query, setQuery] = useState('');
   const [focusId, setFocusId] = useState<string | null>(() => params.get('focus'));
-  const [legend, setLegend] = useState(() => window.innerWidth >= 1100);
+  const [legend, setLegend] = useState(() => window.innerWidth >= 1500);
   const didFit = useRef(false);
 
   const highlight = hover ?? selected ?? focusId;
@@ -143,7 +143,7 @@ function Universe() {
   useEffect(() => {
     if (!initialized || didFit.current) return;
     didFit.current = true;
-    rf.fitView({ padding: 0.14, duration: 0, nodes: graph.nodes.map((n) => ({ id: n.id })) });
+    rf.fitView({ padding: 0.06, duration: 0, nodes: graph.nodes.map((n) => ({ id: n.id })) });
     const f = focusId ? byId.get(focusId) : null;
     if (f) setTimeout(() => rf.setCenter(f.x * 0.6, f.y * 0.6, { zoom: 0.95, duration: 900 }), 700);
   }, [initialized, rf, graph, focusId, byId]);
@@ -169,7 +169,7 @@ function Universe() {
     setFocusId(null);
     setNodes(derived);
     if (params.get('focus')) setParams({}, { replace: true });
-    setTimeout(() => rf.fitView({ padding: 0.14, duration: 600, nodes: graph.nodes.map((n) => ({ id: n.id })) }), 30);
+    setTimeout(() => rf.fitView({ padding: 0.06, duration: 600, nodes: graph.nodes.map((n) => ({ id: n.id })) }), 30);
   };
 
   const gaps = graph.nodes.filter((n) => n.cat === 'gap').length;
@@ -186,11 +186,13 @@ function Universe() {
           e: graph.edges.length,
           g: gaps,
         })}
-        actions={<SearchInput value={query} onChange={setQuery} placeholder={t('Search your Universe…', 'Cari di Universe-mu…')} className="w-full sm:w-72" count={matches?.size} />}
       />
-      <FilterChips label={t('Filter the universe', 'Filter universe')} value={filter} onChange={(v) => { setFilter(v); setSelected(null); setFocusId(null); }} options={FILTERS.map((f) => ({ value: f.value, label: l(f) }))} />
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+        <FilterChips className="min-w-0 flex-1" label={t('Filter the universe', 'Filter universe')} value={filter} onChange={(v) => { setFilter(v); setSelected(null); setFocusId(null); }} options={FILTERS.map((f) => ({ value: f.value, label: l(f) }))} />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('Search your Universe…', 'Cari di Universe-mu…')} className="w-full shrink-0 xl:w-72" count={matches?.size} />
+      </div>
 
-      <div className="relative h-[68dvh] min-h-[480px] overflow-hidden rounded-[24px] border border-border bg-surface shadow-card lg:h-[calc(100dvh-300px)] lg:min-h-[560px]">
+      <div className="relative h-[68dvh] min-h-[480px] overflow-hidden rounded-[24px] border border-border bg-surface shadow-card lg:h-[calc(100dvh-260px)] lg:min-h-[600px]">
         <div className="pointer-events-none absolute inset-0 grid-dots opacity-50" aria-hidden />
         <ReactFlow
           nodes={nodes}
@@ -226,7 +228,7 @@ function Universe() {
           {[
             { icon: Plus, label: t('Zoom in', 'Perbesar'), fn: () => rf.zoomIn({ duration: 250 }) },
             { icon: Minus, label: t('Zoom out', 'Perkecil'), fn: () => rf.zoomOut({ duration: 250 }) },
-            { icon: Maximize, label: t('Fit view', 'Sesuaikan tampilan'), fn: () => rf.fitView({ padding: 0.14, duration: 500, nodes: graph.nodes.map((n) => ({ id: n.id })) }) },
+            { icon: Maximize, label: t('Fit view', 'Sesuaikan tampilan'), fn: () => rf.fitView({ padding: 0.06, duration: 500, nodes: graph.nodes.map((n) => ({ id: n.id })) }) },
             { icon: RotateCcw, label: t('Reset', 'Reset'), fn: reset },
           ].map((c, i) => (
             <Tooltip key={c.label} content={c.label} side="left">

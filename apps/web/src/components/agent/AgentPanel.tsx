@@ -234,7 +234,7 @@ export function AgentPanel() {
         <div>
           <AnimatePresence>
             {messages.length > 0 && !thinking && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="no-scrollbar -mx-1 mb-3 flex gap-2 overflow-x-auto px-1">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="no-scrollbar mask-fade-r -mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pr-8">
                 {SUGGESTIONS.map((s) => (
                   <button key={s.en} type="button" onClick={() => ask(l(s))} className="shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-[12.5px] font-medium text-muted-foreground transition hover:border-green/40 hover:text-foreground">
                     {l(s)}

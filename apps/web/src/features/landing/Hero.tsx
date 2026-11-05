@@ -9,6 +9,7 @@ import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { ease } from '@/lib/motion';
 import { scrollToId } from './chrome';
+import { Sdg4Mark } from './MissionSection';
 
 interface HNode {
   id: string;
@@ -132,7 +133,7 @@ function HeroOrbit() {
             <span style={{ display: 'block', animation: `float ${6 + (i % 3)}s ease-in-out ${i * 0.4}s infinite` }}>
             <span
               className={cn(
-                'relative flex items-center gap-2 whitespace-nowrap rounded-full border bg-surface py-1.5 pl-1.5 pr-3 transition-[opacity,transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                'relative flex items-center gap-2 whitespace-nowrap rounded-full border bg-surface p-1.5 sm:pr-3 transition-[opacity,transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
                 on ? 'scale-[1.06] border-green/40 shadow-hover' : 'border-border shadow-card',
                 dim && 'opacity-45',
               )}
@@ -148,7 +149,7 @@ function HeroOrbit() {
               >
                 <n.icon className="size-3.5" />
               </span>
-              <span className="text-[12.5px] font-semibold sm:text-[13px]">{l(n.label)}</span>
+              <span className="hidden text-[13px] font-semibold sm:inline">{l(n.label)}</span>
               {/* Kind label floats below the pill so the node never changes width under the cursor. */}
               <span
                 className={cn(
@@ -157,6 +158,7 @@ function HeroOrbit() {
                 )}
                 aria-hidden
               >
+                <span className="sm:hidden">{l(n.label)} · </span>
                 {l(n.kind)}
               </span>
             </span>
@@ -205,10 +207,21 @@ export function Hero() {
       <div className="pointer-events-none absolute -right-40 top-40 size-[460px] rounded-full bg-orange/10 blur-3xl" aria-hidden />
       <div className="container-orbit relative grid items-center gap-14 lg:grid-cols-[1.02fr_1fr] lg:gap-10">
         <motion.div style={{ y, opacity }}>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3.5 text-[13px] font-semibold shadow-xs">
-            <span className="rounded-full bg-green px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">New</span>
-            {t('Smart Career & Learning Ecosystem', 'Smart Career & Learning Ecosystem')}
-          </motion.div>
+          <motion.button
+            type="button"
+            onClick={() => scrollToId('sdg')}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease }}
+            className="group inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3.5 text-left text-[13px] font-semibold shadow-xs transition hover:border-border-strong hover:shadow-card"
+          >
+            <Sdg4Mark size="sm" className="rounded-full" />
+            <span className="min-w-0 truncate">
+              <span className="text-muted-foreground">{t('Supports SDG 4 · ', 'Mendukung SDG 4 · ')}</span>
+              {t('Smart Education & Career Ecosystem', 'Ekosistem Smart Education & Karier')}
+            </span>
+            <ArrowRight className="size-3.5 shrink-0 text-subtle-foreground transition-transform group-hover:translate-x-0.5" />
+          </motion.button>
           <h1 className="mt-6 font-display text-[46px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[64px] lg:text-[72px]">
             {words.map((w, i) => {
               const accent = i >= words.length - 3;
@@ -252,7 +265,7 @@ export function Hero() {
             ))}
           </motion.ul>
         </motion.div>
-        <div className="relative">
+        <div className="relative mt-6 sm:mt-0">
           <HeroOrbit />
           <p className="mt-10 flex items-center justify-center gap-1.5 text-[12.5px] text-subtle-foreground lg:mt-12">
             <MousePointerClick className="size-3.5" /> {t('Hover a node to trace its connection', 'Arahkan ke node untuk melihat koneksinya')}

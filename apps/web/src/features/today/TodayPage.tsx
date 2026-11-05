@@ -31,6 +31,7 @@ import { ROLE_BY_ID, SKILL_BY_ID } from '@/data/catalog';
 import { MILESTONES } from '@/data/journey';
 import { OPPORTUNITIES, OPP_BY_ID, TYPE_LABEL } from '@/data/opportunities';
 import { useT } from '@/lib/i18n';
+import { GettingStarted } from './GettingStarted';
 import { cn, daysFromNow, daysUntil, deadlineLabel, formatDate, friendlyDate, greetingFor, relative } from '@/lib/utils';
 import { ease, fadeUp, stagger } from '@/lib/motion';
 
@@ -77,17 +78,17 @@ export default function TodayPage() {
             {topGap && t('Your biggest growth opportunity is {g}.', 'Peluang pertumbuhan terbesarmu adalah {g}.', { g: l(SKILL_BY_ID[topGap.skill].name) })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2.5 shadow-xs">
+        <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] gap-2 lg:flex">
+          <Link to="/app/progress" className="flex items-center gap-2.5 rounded-2xl border border-border bg-surface px-3.5 py-2.5 shadow-xs transition hover:border-border-strong hover:shadow-card">
             <span className="flex size-8 items-center justify-center rounded-xl bg-muted-orange text-orange">
               <Flame className="size-4" />
             </span>
             <div>
               <div className="tabular text-[15px] font-bold leading-none">{t('{n} days', '{n} hari', { n: streak })}</div>
-              <div className="mt-0.5 text-[11.5px] text-muted-foreground">{t('Growth streak', 'Growth streak')}</div>
+              <div className="mt-1 text-[11.5px] text-muted-foreground">{t('Growth streak', 'Growth streak')}</div>
             </div>
-          </div>
-          <div className="flex min-w-[200px] items-center gap-3 rounded-2xl border border-border bg-surface px-3.5 py-2.5 shadow-xs">
+          </Link>
+          <Link to="/app/progress" className="flex min-w-0 items-center gap-3 rounded-2xl lg:min-w-[220px] border border-border bg-surface px-3.5 py-2.5 shadow-xs transition hover:border-border-strong hover:shadow-card">
             <span className="flex size-8 items-center justify-center rounded-xl bg-muted-green text-green-strong dark:text-green">
               <Zap className="size-4" />
             </span>
@@ -102,14 +103,18 @@ export default function TodayPage() {
                 {xp.toLocaleString('en-US')} / {lvl.ceil.toLocaleString('en-US')} XP
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </motion.section>
 
+      <motion.div variants={fadeUp}>
+        <GettingStarted />
+      </motion.div>
+
       {/* Readiness + Next Best Action */}
-      <div className="grid gap-5 lg:grid-cols-12">
+      <div className="grid gap-5 lg:grid-cols-12 [&>*]:min-w-0">
         <motion.div variants={fadeUp} className="lg:col-span-7">
-          <Card className="relative h-full overflow-hidden p-5 sm:p-7">
+          <Card className="relative flex h-full flex-col justify-center overflow-hidden p-5 sm:p-7">
             <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-green/8 blur-3xl" aria-hidden />
             <div className="relative grid items-center gap-6 sm:grid-cols-[auto_1fr]">
               <div className="flex flex-col items-center">
@@ -136,7 +141,7 @@ export default function TodayPage() {
                   ))}
                 </div>
                 <div className="mt-5">
-                  <CardLink to="/app/intelligence">{t('See why — full Career Intelligence', 'Lihat alasannya — Career Intelligence lengkap')}</CardLink>
+                  <CardLink to="/app/intelligence">{t('See the full analysis', 'Lihat analisis lengkap')}</CardLink>
                 </div>
               </div>
             </div>
@@ -207,7 +212,7 @@ export default function TodayPage() {
       </div>
 
       {/* Missions + Journey */}
-      <div className="grid gap-5 lg:grid-cols-12">
+      <div className="grid gap-5 lg:grid-cols-12 [&>*]:min-w-0">
         <motion.div variants={fadeUp} className="lg:col-span-5">
           <Card className="h-full p-5 sm:p-6">
             <SectionHeader
@@ -250,20 +255,20 @@ export default function TodayPage() {
       </div>
 
       {/* Deadlines + Saved + Agent */}
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3 [&>*]:min-w-0">
         <motion.div variants={fadeUp}>
           <Deadlines />
         </motion.div>
         <motion.div variants={fadeUp}>
           <SavedOpps />
         </motion.div>
-        <motion.div variants={fadeUp} className="md:col-span-2 xl:col-span-1">
+        <motion.div variants={fadeUp} className="md:col-span-2 2xl:col-span-1">
           <AgentInsight />
         </motion.div>
       </div>
 
       {/* Growth + Resources */}
-      <div className="grid gap-5 lg:grid-cols-12">
+      <div className="grid gap-5 lg:grid-cols-12 [&>*]:min-w-0">
         <motion.div variants={fadeUp} className="lg:col-span-5">
           <RecentGrowth />
         </motion.div>
@@ -299,21 +304,21 @@ function JourneyPulse() {
       </Card>
     );
   return (
-    <Card className="h-full p-5 sm:p-6">
+    <Card className="@container h-full p-5 sm:p-6">
       <SectionHeader
         icon={Route}
         title={t('Journey progress', 'Progres journey')}
         description={t('{role} Career Path · {d} of {n} quests done', '{role} Career Path · {d} dari {n} quest selesai', { role: l(ROLE_BY_ID[profile.targetRole].name), d: done, n: total })}
         action={<CardLink to="/app/journey">{t('Open', 'Buka')}</CardLink>}
       />
-      <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+      <div className="grid grid-cols-3 gap-1.5 @2xl:grid-cols-6">
         {MILESTONES.map((m) => {
           const qs = quests.filter((q) => q.milestoneId === m.id);
           const pct = qs.length ? (qs.filter((q) => q.status === 'done').length / qs.length) * 100 : 0;
           const isCurrent = m.id === current.id;
           return (
-            <div key={m.id} className={cn('min-w-[92px] flex-1 rounded-xl border p-2.5 transition-colors', isCurrent ? 'border-green/40 bg-muted-green/60' : 'border-border')}>
-              <div className={cn('truncate text-[11.5px] font-bold', isCurrent ? 'text-green-strong dark:text-green' : 'text-muted-foreground')}>{l(m.title)}</div>
+            <div key={m.id} title={l(m.title)} className={cn('flex flex-col rounded-xl border p-2.5 transition-colors', isCurrent ? 'border-green/40 bg-muted-green/60' : 'border-border')}>
+              <div className={cn('line-clamp-2 min-h-[2lh] text-[11.5px] font-bold leading-tight', isCurrent ? 'text-green-strong dark:text-green' : 'text-muted-foreground')}>{l(m.title)}</div>
               <ProgressBar value={pct} size="xs" className="mt-2" label={l(m.title)} />
               <div className="tabular mt-1.5 text-[11px] text-subtle-foreground">
                 {qs.filter((q) => q.status === 'done').length}/{qs.length}
@@ -388,10 +393,13 @@ function Deadlines() {
                     <span className="tabular font-display text-[17px] font-bold leading-none">{formatDate(it.date, 'd')}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[14px] font-semibold">{it.title}</div>
-                    <div className="truncate text-[12.5px] text-muted-foreground">{it.meta}</div>
+                    <div className="line-clamp-1 text-[14px] font-semibold" title={it.title}>{it.title}</div>
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12.5px]">
+                      <span className={cn('shrink-0 font-semibold', d <= 3 ? 'text-orange-strong dark:text-orange' : 'text-foreground/70')}>{friendlyDate(it.date)}</span>
+                      <span className="text-subtle-foreground" aria-hidden>·</span>
+                      <span className="truncate text-muted-foreground">{it.meta}</span>
+                    </div>
                   </div>
-                  <span className={cn('shrink-0 text-[12px] font-semibold', d <= 3 ? 'text-orange-strong dark:text-orange' : 'text-subtle-foreground')}>{friendlyDate(it.date)}</span>
                 </button>
               </li>
             );

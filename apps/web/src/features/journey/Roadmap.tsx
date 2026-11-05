@@ -4,6 +4,7 @@ import { useOrbit } from '@/store/orbit';
 import { moveQuest } from '@/store/actions';
 import { MILESTONES } from '@/data/journey';
 import { ProgressBar } from '@/components/ui/primitives';
+import { Tooltip } from '@/components/ui/overlays';
 import { useT } from '@/lib/i18n';
 import { cn, friendlyDate } from '@/lib/utils';
 import { ease } from '@/lib/motion';
@@ -61,23 +62,42 @@ export function Roadmap({ highlight, onOpen, onAdd }: { highlight: string | null
                   <h3 className="mt-1 font-display text-[18px] font-bold tracking-tight">{l(m.title)}</h3>
                   <p className="text-[13.5px] text-muted-foreground">{l(m.description)}</p>
                 </div>
-                <div className="w-full min-w-[140px] sm:w-44">
-                  <div className="mb-1.5 flex justify-between text-[12px] font-semibold text-muted-foreground">
-                    <span>{t('Progress', 'Progres')}</span>
-                    <span className="tabular">
-                      {done}/{qs.length}
-                    </span>
+                <div className="flex w-full items-end gap-3 sm:w-auto">
+                  <div className="min-w-[140px] flex-1 sm:w-44 sm:flex-none">
+                    <div className="mb-1.5 flex justify-between text-[12px] font-semibold text-muted-foreground">
+                      <span>{t('Progress', 'Progres')}</span>
+                      <span className="tabular">
+                        {done}/{qs.length}
+                      </span>
+                    </div>
+                    <ProgressBar value={pct} size="sm" tone={complete ? 'green' : current ? 'orange' : 'neutral'} label={l(m.title)} />
                   </div>
-                  <ProgressBar value={pct} size="sm" tone={complete ? 'green' : current ? 'orange' : 'neutral'} label={l(m.title)} />
+                  <Tooltip content={t('Add a quest to this stage', 'Tambah quest ke tahap ini')}>
+                    <button
+                      type="button"
+                      onClick={() => onAdd(m.id)}
+                      aria-label={t('Add quest to {m}', 'Tambah quest ke {m}', { m: l(m.title) })}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-dashed border-border-strong text-muted-foreground transition hover:border-green hover:bg-muted-green hover:text-green-strong dark:hover:text-green"
+                    >
+                      <Plus className="size-4" />
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
 
               <ul className="mt-4 grid gap-2 lg:grid-cols-2">
-                {qs.map((q) => {
+                {qs.map((q, qi) => {
                   const Icon = KIND_ICON[q.kind];
                   const hi = highlight === q.id;
+                  // An odd last quest spans both columns so no card ever sits alone in half a row.
+                  const lone = qs.length % 2 === 1 && qi === qs.length - 1 && qs.length > 1;
                   return (
-                    <li key={q.id} id={`quest-${q.id}`} className={cn('group flex items-center gap-3 rounded-xl border bg-surface px-3 py-2.5 transition hover:border-border-strong hover:shadow-xs', hi ? 'border-orange ring-4 ring-orange/25' : 'border-border')}>
+                    <motion.li
+                      layout
+                      key={q.id}
+                      id={`quest-${q.id}`}
+                      className={cn('group flex items-center gap-3 rounded-xl border bg-surface px-3 py-2.5 transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-xs', hi ? 'border-orange ring-4 ring-orange/25' : 'border-border', lone && 'lg:col-span-2')}
+                    >
                       <button
                         type="button"
                         onClick={() => moveQuest(q.id, q.status === 'done' ? 'doing' : 'done')}
@@ -107,14 +127,16 @@ export function Roadmap({ highlight, onOpen, onAdd }: { highlight: string | null
                           </span>
                         </span>
                       </button>
-                    </li>
+                    </motion.li>
                   );
                 })}
-                <li>
-                  <button type="button" onClick={() => onAdd(m.id)} className="flex h-full min-h-[52px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border text-[13px] font-semibold text-subtle-foreground transition hover:border-green/50 hover:text-green-strong dark:hover:text-green">
-                    <Plus className="size-4" /> {t('Add quest', 'Tambah quest')}
-                  </button>
-                </li>
+                {qs.length === 0 && (
+                  <li className="lg:col-span-2">
+                    <button type="button" onClick={() => onAdd(m.id)} className="flex min-h-[56px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border text-[13px] font-semibold text-subtle-foreground transition hover:border-green/50 hover:text-green-strong dark:hover:text-green">
+                      <Plus className="size-4" /> {t('No quests yet — add the first one', 'Belum ada quest — tambahkan yang pertama')}
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           </motion.li>

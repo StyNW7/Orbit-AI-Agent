@@ -6,6 +6,7 @@ import { Hero } from './Hero';
 import { ConnectedSection, HowItWorksSection, ProblemSection } from './StorySections';
 import { CapabilitiesSection, IntelligenceSection, JourneyPreview, UniversePreview } from './ProductSections';
 import { CampusTeaser, FaqSection, FinalCta, ImpactSection, SdgSection } from './ImpactSections';
+import { MissionSection } from './MissionSection';
 
 export default function LandingPage() {
   useLenis();
@@ -24,8 +25,9 @@ export default function LandingPage() {
     <div className="min-h-dvh bg-background">
       <motion.div style={{ scaleX: progress }} className="orbit-gradient fixed inset-x-0 top-0 z-[60] h-[3px] origin-left" aria-hidden />
       <MarketingNav />
-      <main id="main">
+      <main id="main" className="overflow-x-clip">
         <Hero />
+        <MissionSection />
         <ProblemSection />
         <ConnectedSection />
         <HowItWorksSection />
@@ -33,9 +35,9 @@ export default function LandingPage() {
         <JourneyPreview />
         <IntelligenceSection />
         <CapabilitiesSection />
+        <SdgSection />
         <ImpactSection />
         <CampusTeaser />
-        <SdgSection />
         <FaqSection />
         <FinalCta />
       </main>

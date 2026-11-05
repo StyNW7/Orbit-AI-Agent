@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bell, Gauge, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
+import { Bell, Compass, Gauge, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
 import { Logo, OrbitMark } from '@/components/brand/brand';
 import { Avatar, Kbd, ProgressBar } from '@/components/ui/primitives';
 import { DropdownContent, DropdownItem, DropdownLabel, DropdownMenu, DropdownSeparator, DropdownTrigger, Tooltip } from '@/components/ui/overlays';
@@ -13,6 +13,7 @@ import { NotificationsPanel } from './NotificationsPanel';
 import { AgentPanel } from '@/components/agent/AgentPanel';
 import { useOrbit, useInsights } from '@/store/orbit';
 import { useUi } from '@/store/ui';
+import { useGuide } from '@/store/guide';
 import { requestReset } from '@/store/actions';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -161,6 +162,7 @@ function Sidebar() {
 function UserMenu() {
   const profile = useOrbit((s) => s.profile);
   const signOut = useOrbit((s) => s.signOut);
+  const showGuide = useGuide((s) => s.setDismissed);
   const navigate = useNavigate();
   const { t } = useT();
   if (!profile) return null;
@@ -194,6 +196,14 @@ function UserMenu() {
         </DropdownItem>
         <DropdownItem onSelect={() => navigate('/campus')}>
           <Zap /> Orbit for Campus
+        </DropdownItem>
+        <DropdownItem
+          onSelect={() => {
+            showGuide(false);
+            navigate('/app');
+          }}
+        >
+          <Compass /> {t('Getting-started guide', 'Panduan memulai')}
         </DropdownItem>
         <DropdownSeparator />
         <DropdownLabel>{t('Demo', 'Demo')}</DropdownLabel>
@@ -332,6 +342,7 @@ export default function AppShell() {
   const collapsed = useUi((s) => s.sidebarCollapsed);
   const setCommand = useUi((s) => s.setCommandOpen);
   const openAgent = useUi((s) => s.openAgent);
+  const markGuide = useGuide((s) => s.mark);
   const location = useLocation();
   const { t } = useT();
 
@@ -353,7 +364,14 @@ export default function AppShell() {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-  }, [location.pathname]);
+    const area = location.pathname.split('/')[2];
+    if (area === 'intelligence' || area === 'universe' || area === 'journey') markGuide(area);
+  }, [location.pathname, markGuide]);
+
+  const agentOpen = useUi((s) => s.agentOpen);
+  useEffect(() => {
+    if (agentOpen) markGuide('agent');
+  }, [agentOpen, markGuide]);
 
   return (
     <div className="min-h-dvh bg-background">

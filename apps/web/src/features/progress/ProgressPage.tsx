@@ -128,7 +128,7 @@ export default function ProgressPage() {
                     </span>
                     <div className="min-w-0">
                       <div className="text-[14px] font-semibold">{d.label}</div>
-                      <div className="truncate text-[12.5px] text-muted-foreground">{d.detail}</div>
+                      <div className="text-[12.5px] leading-snug text-muted-foreground">{d.detail}</div>
                     </div>
                   </motion.li>
                 ))}
@@ -146,53 +146,11 @@ export default function ProgressPage() {
         <StatCard icon={Flag} label={t('Milestones reached', 'Milestone tercapai')} value={<CountUp value={milestonesDone} suffix={`/${MILESTONES.length}`} />} className="col-span-2 lg:col-span-1" />
       </motion.div>
 
-      <div className="grid gap-5 lg:grid-cols-12">
-        <motion.div variants={fadeUp} className="lg:col-span-7">
-          <Card className="h-full p-5 sm:p-6">
-            <SectionHeader icon={Award} title={t('Achievements', 'Achievement')} description={t('{a} of {b} unlocked', '{a} dari {b} terbuka', { a: ACHIEVEMENTS.filter((a) => { const p = a.progress(state); return p.value >= p.goal; }).length, b: ACHIEVEMENTS.length })} />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {ACHIEVEMENTS.map((a, i) => {
-                const p = a.progress(state);
-                const unlocked = p.value >= p.goal;
-                const Icon = ACH_ICON[a.icon];
-                return (
-                  <motion.div
-                    key={a.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.15 + i * 0.04, duration: 0.35, ease }}
-                    className={cn('relative flex flex-col items-center rounded-2xl border p-4 text-center transition', unlocked ? 'border-green/30 bg-gradient-to-b from-muted-green/60 to-surface' : 'border-border bg-surface-2/40')}
-                    title={l(a.description)}
-                  >
-                    <div className={cn('relative flex size-12 items-center justify-center rounded-2xl', unlocked ? 'bg-gradient-to-br from-green to-[#3fc06a] text-white shadow-green' : 'bg-surface-3 text-subtle-foreground')}>
-                      <Icon className="size-5" />
-                      {!unlocked && (
-                        <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-surface ring-2 ring-surface">
-                          <Lock className="size-3" />
-                        </span>
-                      )}
-                    </div>
-                    <div className={cn('mt-3 text-[13px] font-bold leading-tight', !unlocked && 'text-muted-foreground')}>{l(a.title)}</div>
-                    <div className="mt-1 line-clamp-2 text-[11.5px] leading-snug text-subtle-foreground">{l(a.description)}</div>
-                    {!unlocked && (
-                      <div className="mt-2.5 w-full">
-                        <ProgressBar value={(p.value / p.goal) * 100} size="xs" tone="orange" label={l(a.title)} />
-                        <div className="tabular mt-1 text-[10.5px] font-semibold text-subtle-foreground">
-                          {p.value}/{p.goal}
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={fadeUp} className="lg:col-span-5">
-          <Card className="relative h-full overflow-hidden p-5 sm:p-6">
-            <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-orange/10 blur-3xl" aria-hidden />
-            <SectionHeader icon={Zap} title={t('Level & streak', 'Level & streak')} />
+      <motion.div variants={fadeUp}>
+        <Card className="relative overflow-hidden p-5 sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-orange/10 blur-3xl" aria-hidden />
+          <SectionHeader icon={Zap} title={t('Level & streak', 'Level & streak')} description={t('XP comes from missions, quests and reflections.', 'XP didapat dari misi, quest, dan refleksi.')} />
+          <div className="relative grid gap-5 md:grid-cols-2 md:items-center">
             <div className="flex items-center gap-4">
               <div className="relative flex size-20 shrink-0 items-center justify-center rounded-[22px] bg-[#13201a] text-white shadow-pop dark:bg-surface-3">
                 <span className="font-display text-[30px] font-extrabold">{lvl.level}</span>
@@ -207,19 +165,17 @@ export default function ProgressPage() {
                 <div className="mt-1.5 text-[12px] text-subtle-foreground">{t('{n} XP to Level {l}', '{n} XP lagi ke Level {l}', { n: (lvl.ceil - xp).toLocaleString('en-US'), l: lvl.level + 1 })}</div>
               </div>
             </div>
-            <div className="mt-6 rounded-2xl border border-border bg-surface-2/50 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-display text-[16px] font-bold">
-                  <Flame className="size-5 text-orange" /> {t('{n}-day growth streak', 'Growth streak {n} hari', { n: streak })}
-                </div>
+            <div className="rounded-2xl border border-border bg-surface-2/50 p-4">
+              <div className="flex items-center gap-2 font-display text-[16px] font-bold">
+                <Flame className="size-5 text-orange" /> {t('{n}-day growth streak', 'Growth streak {n} hari', { n: streak })}
               </div>
-              <div className="mt-3 grid grid-cols-7 gap-1.5">
+              <div className="mt-3 grid grid-cols-7 gap-1">
                 {Array.from({ length: 7 }).map((_, i) => {
                   const d = new Date(Date.now() - (6 - i) * 86_400_000);
                   const active = 6 - i < streak;
                   return (
                     <div key={i} className="flex flex-col items-center gap-1.5">
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }} className={cn('flex size-8 items-center justify-center rounded-full', active ? 'bg-orange text-white shadow-orange' : 'bg-surface-3 text-subtle-foreground')}>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }} className={cn('flex size-8 max-w-full items-center justify-center rounded-full', active ? 'bg-orange text-white shadow-orange' : 'bg-surface-3 text-subtle-foreground')}>
                         {active ? <Flame className="size-3.5" /> : <span className="size-1.5 rounded-full bg-current" />}
                       </motion.div>
                       <span className="text-[10.5px] font-semibold text-subtle-foreground">{formatDate(d, 'EEEEE')}</span>
@@ -229,9 +185,54 @@ export default function ProgressPage() {
               </div>
               <p className="mt-3 text-[12.5px] text-muted-foreground">{t('Complete one mission or quest a day to keep it going.', 'Selesaikan satu misi atau quest per hari untuk menjaganya.')}</p>
             </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+          <Card className="@container p-5 sm:p-6">
+            <SectionHeader icon={Award} title={t('Achievements', 'Achievement')} description={t('{a} of {b} unlocked', '{a} dari {b} terbuka', { a: ACHIEVEMENTS.filter((a) => { const p = a.progress(state); return p.value >= p.goal; }).length, b: ACHIEVEMENTS.length })} />
+            <div className="grid gap-2.5 @xl:grid-cols-2 @6xl:grid-cols-4">
+              {ACHIEVEMENTS.map((a, i) => {
+                const p = a.progress(state);
+                const unlocked = p.value >= p.goal;
+                const Icon = ACH_ICON[a.icon];
+                return (
+                  <motion.div
+                    key={a.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 + i * 0.04, duration: 0.35, ease }}
+                    className={cn('relative flex items-start gap-3 rounded-2xl border p-3.5 transition', unlocked ? 'border-green/30 bg-gradient-to-br from-muted-green/70 to-surface' : 'border-border bg-surface-2/40')}
+                  >
+                    <div className={cn('relative flex size-11 shrink-0 items-center justify-center rounded-[14px]', unlocked ? 'bg-gradient-to-br from-green to-[#3fc06a] text-white shadow-green' : 'bg-surface-3 text-subtle-foreground')}>
+                      <Icon className="size-5" />
+                      {!unlocked && (
+                        <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-surface ring-2 ring-surface">
+                          <Lock className="size-3" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className={cn('text-[13.5px] font-bold leading-tight', !unlocked && 'text-foreground/80')}>{l(a.title)}</div>
+                        {unlocked ? (
+                          <CheckCircle2 className="size-4 shrink-0 text-green" aria-label={t('Unlocked', 'Terbuka')} />
+                        ) : (
+                          <span className="tabular shrink-0 text-[11px] font-semibold text-subtle-foreground">
+                            {p.value}/{p.goal}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">{l(a.description)}</div>
+                      {!unlocked && <ProgressBar value={(p.value / p.goal) * 100} size="xs" tone="orange" className="mt-2" label={l(a.title)} />}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </Card>
-        </motion.div>
-      </div>
+      </motion.div>
 
       <motion.div variants={fadeUp}>
         <Card className="p-5 sm:p-6">
