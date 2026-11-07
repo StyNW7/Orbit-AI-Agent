@@ -8,6 +8,7 @@ import { CapabilitiesSection, IntelligenceSection, JourneyPreview, UniversePrevi
 import { CampusTeaser, FaqSection, FinalCta, ImpactSection, SdgSection } from './ImpactSections';
 import { MissionSection } from './MissionSection';
 import { CompassSection } from './CompassSection';
+import { FlowSection } from './FlowSection';
 
 export default function LandingPage() {
   useLenis();
@@ -31,6 +32,7 @@ export default function LandingPage() {
         <MissionSection />
         <ProblemSection />
         <ConnectedSection />
+        <FlowSection />
         <CompassSection />
         <HowItWorksSection />
         <UniversePreview />

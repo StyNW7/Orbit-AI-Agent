@@ -242,7 +242,7 @@ export function Hero() {
                 {t('Build My Orbit', 'Bangun Orbit Saya')} <ArrowRight />
               </Link>
             </Button>
-            <Button size="xl" variant="secondary" onClick={() => scrollToId('how')}>
+            <Button size="xl" variant="secondary" onClick={() => scrollToId('flow')}>
               {t('Explore How It Works', 'Lihat Cara Kerjanya')}
             </Button>
           </motion.div>

@@ -51,7 +51,7 @@ export function scrollToId(id: string) {
 const LINKS = [
   { id: 'mission', en: 'Our Purpose', idn: 'Tujuan' },
   { id: 'compass', en: 'Learning Compass', idn: 'Kompas Belajar' },
-  { id: 'how', en: 'How It Works', idn: 'Cara Kerja' },
+  { id: 'flow', en: 'How It Works', idn: 'Cara Kerja' },
   { id: 'sdg', en: 'SDG 4', idn: 'SDG 4' },
   { id: 'campus', en: 'For Campus', idn: 'Untuk Kampus', to: '/campus' },
   { id: 'faq', en: 'FAQ', idn: 'FAQ' },
@@ -189,7 +189,7 @@ export function MarketingFooter() {
     {
       title: t('Platform', 'Platform'),
       items: [
-        { label: t('How It Works', 'Cara Kerja'), onClick: link('how') },
+        { label: t('How It Works', 'Cara Kerja'), onClick: link('flow') },
         { label: t('Learning Compass', 'Kompas Belajar'), onClick: link('compass') },
         { label: 'Career Universe', onClick: link('universe') },
         { label: 'Journey', onClick: link('journey') },

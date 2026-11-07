@@ -260,7 +260,7 @@ export function ConnectedSection() {
 // ─────────────────────────────────────────────────────────── How it works
 
 const STAGES: { icon: LucideIcon; title: { en: string; id: string }; body: { en: string; id: string } }[] = [
-  { icon: User, title: { en: 'Career Profile', id: 'Career Profile' }, body: { en: 'Your classes, studies, experiences, projects and skills become measurable evidence.', id: 'Pelajaran, studi, pengalaman, proyek, dan skill-mu menjadi bukti yang terukur.' } },
+  { icon: User, title: { en: 'Career Profile', id: 'Career Profile' }, body: { en: 'Your classes, uploaded materials, experiences, projects and skills become measurable evidence.', id: 'Mata kuliah, materi yang kamu unggah, pengalaman, proyek, dan skill-mu menjadi bukti yang terukur.' } },
   { icon: Gauge, title: { en: 'Career Intelligence', id: 'Career Intelligence' }, body: { en: 'Orbit scores readiness across six dimensions and explains every number.', id: 'Orbit menilai kesiapan di enam dimensi dan menjelaskan setiap angkanya.' } },
   { icon: OrbitIcon, title: { en: 'Career Universe', id: 'Career Universe' }, body: { en: 'See how skills, people, learning and opportunities connect to you.', id: 'Lihat bagaimana skill, orang, pembelajaran, dan peluang terhubung denganmu.' } },
   { icon: BriefcaseBusiness, title: { en: 'Opportunity Intelligence', id: 'Opportunity Intelligence' }, body: { en: 'Jobs, internships, courses and mentors ranked by fit — with reasons.', id: 'Pekerjaan, magang, kursus, dan mentor diurutkan berdasarkan kecocokan — dengan alasannya.' } },
@@ -415,7 +415,7 @@ export function HowItWorksSection() {
   return (
     <Section id="how" className="bg-surface-2/40">
       <div className="container-orbit">
-        <SectionIntro center eyebrow={t('How Orbit works', 'Cara kerja Orbit')} title={t('From profile to next action in six connected steps.', 'Dari profil ke aksi berikutnya dalam enam langkah terhubung.')} desc={t('Understand → Explore → Plan → Act → Grow. Select a step to preview it.', 'Pahami → Eksplorasi → Rencanakan → Bertindak → Tumbuh. Pilih langkah untuk melihat pratinjaunya.')} />
+        <SectionIntro center eyebrow={t('Under the hood', 'Di balik layar')} title={t('From profile to next action in six connected steps.', 'Dari profil ke aksi berikutnya dalam enam langkah terhubung.')} desc={t('What Orbit Intelligence does every time you add a material or finish a quest. Select a step to preview it.', 'Yang dilakukan Orbit Intelligence setiap kali kamu menambah materi atau menyelesaikan quest. Pilih langkah untuk melihat pratinjaunya.')} />
         <div className="relative mt-14">
           <div className="absolute left-[8%] right-[8%] top-7 hidden h-[3px] rounded-full bg-surface-3 lg:block" aria-hidden>
             <motion.div className="h-full rounded-full bg-gradient-to-r from-green to-orange" animate={{ width: `${(active / (STAGES.length - 1)) * 100}%` }} transition={{ duration: 0.6, ease }} />

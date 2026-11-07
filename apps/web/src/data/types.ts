@@ -199,7 +199,7 @@ export interface JournalEntry {
   updatedAt: string;
 }
 
-export type ActivityKind = 'quest' | 'skill' | 'save' | 'apply' | 'journal' | 'achievement' | 'reminder' | 'journey' | 'profile';
+export type ActivityKind = 'quest' | 'skill' | 'save' | 'apply' | 'journal' | 'achievement' | 'reminder' | 'journey' | 'profile' | 'material' | 'orbit';
 
 export interface Activity {
   id: string;
@@ -215,4 +215,47 @@ export interface HistoryPoint {
   label: string;
   value: number;
   note?: Text;
+}
+
+// ───────────────────────────── Knowledge Vault
+
+export type MaterialKind = 'slides' | 'notes' | 'assignment' | 'project' | 'link';
+
+export interface MaterialSkill {
+  skill: string;
+  /** Detection confidence, 0–100. */
+  score: number;
+}
+
+/** A learning material the learner uploaded or linked. Only the analysis is stored — never the file itself. */
+export interface Material {
+  id: string;
+  title: string;
+  kind: MaterialKind;
+  source: 'file' | 'link' | 'sample';
+  fileName?: string;
+  ext?: string;
+  size?: number;
+  url?: string;
+  /** Class from the Learning Map this material belongs to. */
+  courseId?: string;
+  note?: string;
+  skills: MaterialSkill[];
+  keywords: string[];
+  summary: string;
+  words: number;
+  addedAt: string;
+}
+
+// ───────────────────────────── Dream orbits
+
+/** One career dream. Inactive orbits keep a snapshot of their own journey; the active one lives in the store. */
+export interface DreamOrbit {
+  id: string;
+  roleId: RoleId;
+  createdAt: string;
+  note?: string;
+  quests?: Quest[];
+  history?: number[];
+  readiness30dAgo?: number;
 }

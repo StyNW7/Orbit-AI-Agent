@@ -21,6 +21,9 @@ import {
   Target,
   Users,
   Building2,
+  FileUp,
+  Library,
+  Rocket,
 } from 'lucide-react';
 import { useUi, useResolvedTheme } from '@/store/ui';
 import { useOrbit } from '@/store/orbit';
@@ -120,6 +123,8 @@ export function CommandPalette() {
 
                       <Command.Group heading={t('Quick actions', 'Aksi cepat')} className={groupCls}>
                         <Item value="ask orbit agent tanya" icon={Sparkles} label={t('Ask Orbit Agent', 'Tanya Orbit Agent')} hint="A" onSelect={() => { setOpen(false); openAgent(); }} />
+                        <Item value="add material upload file slide ppt pdf tugas materi unggah vault" icon={FileUp} label={t('Add material to Knowledge Vault', 'Tambah materi ke Knowledge Vault')} onSelect={() => { setOpen(false); useUi.getState().openAddMaterial(); }} />
+                        <Item value="new dream orbit career switch orbit impian karier ganti" icon={Rocket} label={t('New dream orbit / switch orbit', 'Orbit impian baru / ganti orbit')} onSelect={() => { setOpen(false); useUi.getState().setOrbitsOpen(true); }} />
                         <Item value="theme dark light mode tema" icon={Moon} label={theme === 'dark' ? t('Switch to light mode', 'Ganti ke mode terang') : t('Switch to dark mode', 'Ganti ke mode gelap')} onSelect={() => { setOpen(false); setTheme(theme === 'dark' ? 'light' : 'dark'); }} />
                         <Item value="language bahasa english indonesia" icon={Languages} label={locale === 'en' ? 'Ganti ke Bahasa Indonesia' : 'Switch to English'} onSelect={() => { setOpen(false); setLocale(locale === 'en' ? 'id' : 'en'); }} />
                         <Item value="reset demo restore" icon={RotateCcw} label={t('Reset demo data', 'Reset data demo')} onSelect={() => { setOpen(false); requestReset(); }} />
@@ -129,6 +134,8 @@ export function CommandPalette() {
                         {[...PRIMARY_NAV, ...SECONDARY_NAV, SETTINGS_NAV].map((n) => (
                           <Item key={n.to} value={`page ${l(n.label)} ${n.to}`} icon={n.icon} label={l(n.label)} hint={l(n.stage)} onSelect={() => go(n.to)} />
                         ))}
+                        <Item value="knowledge vault materials materi" icon={Library} label="Knowledge Vault" hint={t('Learn', 'Belajar')} onSelect={() => go('/app/learning?view=vault')} />
+                        <Item value="learning map curriculum kurikulum mata kuliah" icon={GraduationCap} label="Learning Map" hint={t('Learn', 'Belajar')} onSelect={() => go('/app/learning?view=map')} />
                         <Item value="campus orbit for campus kampus" icon={Building2} label="Orbit for Campus" onSelect={() => go('/campus')} />
                       </Command.Group>
 

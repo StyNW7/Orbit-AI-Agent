@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 /** Steps of the in-app "Start here" guide that are tracked by visiting a place rather than by data. */
-export type GuideMark = 'intelligence' | 'universe' | 'journey' | 'agent';
+export type GuideMark = 'intelligence' | 'universe' | 'journey' | 'agent' | 'orbit' | 'learning' | 'vault';
 
 interface GuideState {
   seen: Partial<Record<GuideMark, true>>;

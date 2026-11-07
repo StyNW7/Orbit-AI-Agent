@@ -67,8 +67,11 @@ export default function SettingsPage() {
   const changeRole = (id: RoleId) => {
     if (id === profile.targetRole) return;
     askConfirm({
-      title: t('Change your career goal?', 'Ganti tujuan kariermu?'),
-      description: t('Orbit will recalculate your Career Readiness, gaps and recommendations for the new role. Your journey stays as it is.', 'Orbit akan menghitung ulang Career Readiness, gap, dan rekomendasi untuk peran baru. Journey-mu tetap seperti sekarang.'),
+      title: t('Change the goal of this orbit?', 'Ganti tujuan orbit ini?'),
+      description: t(
+        'Orbit recalculates readiness, gaps and recommendations for the new role; this orbit’s journey stays. Want to keep this dream too? Use “New dream orbit” in the top bar instead.',
+        'Orbit menghitung ulang kesiapan, gap, dan rekomendasi untuk peran baru; journey orbit ini tetap. Ingin tetap menyimpan impian ini? Pakai “Orbit impian baru” di bar atas.',
+      ),
       items: [{ label: l(ROLE_BY_ID[id].name), meta: l(ROLE_BY_ID[id].tagline) }],
       icon: 'journey',
       confirmLabel: t('Change goal', 'Ganti tujuan'),
@@ -81,7 +84,7 @@ export default function SettingsPage() {
 
   const exportData = () => {
     const data = useOrbit.getState();
-    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), profile: data.profile, quests: data.quests, saved: data.saved, reminders: data.reminders, journal: data.journal, activity: data.activity, xp: data.xp }, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), profile: data.profile, orbits: data.orbits, materials: data.materials, quests: data.quests, saved: data.saved, reminders: data.reminders, journal: data.journal, activity: data.activity, xp: data.xp }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

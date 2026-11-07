@@ -440,8 +440,8 @@ function GoalStep({ profile, setProfile }: { profile: Profile; setProfile: (p: P
       <StepTitle
         icon={Target}
         eyebrow={t('Step 2 · Career Goal', 'Langkah 2 · Tujuan Karier')}
-        title={t('Which role are you aiming for?', 'Peran apa yang kamu tuju?')}
-        desc={t('Orbit compares your profile with what each role needs. You can change your goal anytime.', 'Orbit membandingkan profilmu dengan kebutuhan setiap peran. Kamu bisa mengganti tujuan kapan saja.')}
+        title={t('Which career do you dream of first?', 'Karier impian mana yang kamu tuju dulu?')}
+        desc={t('This becomes your first orbit. Dreaming of more than one career? Add more dream orbits anytime inside Orbit.', 'Ini menjadi orbit pertamamu. Punya lebih dari satu impian karier? Tambahkan orbit impian lain kapan saja di dalam Orbit.')}
       />
       <div role="radiogroup" aria-label={t('Target role', 'Peran target')} className="grid gap-3 sm:grid-cols-2">
         {ROLES.map((r, i) => {

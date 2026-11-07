@@ -5,6 +5,10 @@ import { useMemo } from 'react';
 import type {
   Activity,
   AppStatus,
+  DreamOrbit,
+  Material,
+  Opportunity,
+  RoleId,
   HistoryPoint,
   JournalEntry,
   Mission,
@@ -15,9 +19,9 @@ import type {
   Reminder,
   SavedItem,
 } from '@/data/types';
-import { NAYA, NAYA_30D_AGO, NAYA_HISTORY, seedActivity, seedJournal, seedMissions, seedNotifications, seedReminders, seedSaved } from '@/data/persona';
-import { seedQuests } from '@/data/journey';
-import { insightsFor, readinessOf, currentDims } from '@/engine/intelligence';
+import { NAYA, NAYA_30D_AGO, NAYA_HISTORY, seedActivity, seedJournal, seedMaterials, seedMissions, seedNotifications, seedReminders, seedSaved } from '@/data/persona';
+import { questFromOpportunity, seedQuests } from '@/data/journey';
+import { insightsFor, readinessOf, currentDims, skillProfile } from '@/engine/intelligence';
 import { unlockedIds } from '@/engine/achievements';
 import type { AgentMessage } from '@/engine/agent';
 import { uid } from '@/lib/utils';
@@ -44,6 +48,11 @@ export interface OrbitData {
   agent: AgentMessage[];
   campusPlanned: string[];
   onboardedAt: string;
+  /** Knowledge Vault: analysed learning materials (files are never stored). */
+  materials: Material[];
+  /** Career dreams. Empty means a single implicit orbit for the profile's target role. */
+  orbits: DreamOrbit[];
+  activeOrbitId: string;
 }
 
 interface OrbitActions {
@@ -82,6 +91,17 @@ interface OrbitActions {
   pushAgent: (m: AgentMessage) => void;
   clearAgent: () => void;
 
+  addMaterial: (m: Material) => void;
+  updateMaterial: (id: string, patch: Partial<Material>) => void;
+  deleteMaterial: (id: string) => Material | undefined;
+  restoreMaterial: (m: Material) => void;
+
+  /** Creates a dream orbit for a role (or reuses the existing one) and makes it active. Returns its id. */
+  createOrbit: (roleId: RoleId, note?: string) => string;
+  switchOrbit: (id: string) => void;
+  removeOrbit: (id: string) => DreamOrbit | undefined;
+  restoreOrbit: (o: DreamOrbit) => void;
+
   toggleCampusProgram: (id: string) => void;
   logActivity: (a: Omit<Activity, 'id' | 'at'>) => void;
   /** Returns ids of achievements unlocked by the latest change. */
@@ -112,7 +132,33 @@ const EMPTY: OrbitData = {
   agent: [],
   campusPlanned: ['prog-sql'],
   onboardedAt: '',
+  materials: [],
+  orbits: [],
+  activeOrbitId: '',
 };
+
+/** The learner's orbits, with an implicit primary orbit for profiles created before multi-orbit support. */
+export function listOrbits(s: Pick<OrbitData, 'orbits' | 'profile' | 'onboardedAt'>): DreamOrbit[] {
+  if (s.orbits.length || !s.profile) return s.orbits;
+  return [{ id: 'primary', roleId: s.profile.targetRole, createdAt: s.onboardedAt || new Date().toISOString() }];
+}
+
+export function activeOrbitId(s: Pick<OrbitData, 'orbits' | 'profile' | 'onboardedAt' | 'activeOrbitId'>) {
+  const list = listOrbits(s);
+  return list.some((o) => o.id === s.activeOrbitId) ? s.activeOrbitId : (list[0]?.id ?? '');
+}
+
+/** A new dream orbit with its own starter journey, built from the role's top skill gaps. */
+export function makeOrbit(profile: Profile, roleId: RoleId, note?: string): DreamOrbit {
+  const p = { ...profile, targetRole: roleId };
+  const courses = skillProfile(p)
+    .filter((g) => g.isGap && g.course)
+    .map((g) => g.course as Opportunity);
+  const unique = [...new Map(courses.map((o) => [o.id, o])).values()].slice(0, 3);
+  const quests = unique.map((o, i) => ({ ...questFromOpportunity(o, i), id: uid('q') }));
+  const base = Math.round(readinessOf(currentDims(p, [])));
+  return { id: uid('orbit'), roleId, createdAt: new Date().toISOString(), note, quests, history: [Math.max(base - 4, 20)], readiness30dAgo: base };
+}
 
 function demoData(profile: Profile = NAYA): OrbitData {
   const quests = seedQuests();
@@ -138,6 +184,12 @@ function demoData(profile: Profile = NAYA): OrbitData {
     baselineAt: new Date().toISOString(),
     achievements: unlockedIds({ profile, quests, saved, journal, streak: 5, readiness }),
     onboardedAt: new Date().toISOString(),
+    materials: seedMaterials(),
+    orbits: [
+      { id: 'orbit-main', roleId: profile.targetRole, createdAt: new Date(Date.now() - 36 * 86_400_000).toISOString() },
+      makeOrbit(profile, profile.targetRole === 'data-analyst' ? 'product-manager' : 'data-analyst', 'Plan B — I love the data side of product work.'),
+    ],
+    activeOrbitId: 'orbit-main',
   };
 }
 
@@ -150,7 +202,7 @@ function customData(profile: Profile): OrbitData {
     profile,
     quests: [],
     missions: [
-      { id: 'm0', title: { en: 'See what your classes are for in the Learning Map', id: 'Lihat kegunaan mata kuliahmu di Learning Map' }, minutes: 5, done: false, xp: 20, to: '/app/learning' },
+      { id: 'm0', title: { en: 'See what your classes are for in the Learning Map', id: 'Lihat kegunaan mata kuliahmu di Learning Map' }, minutes: 5, done: false, xp: 20, to: '/app/learning?view=map' },
       { id: 'm1', title: { en: 'Explore your Career Universe', id: 'Jelajahi Career Universe-mu' }, minutes: 5, done: false, xp: 20, to: '/app/universe' },
       { id: 'm2', title: { en: 'Add your first quest to the Journey', id: 'Tambahkan quest pertama ke Journey' }, minutes: 5, done: false, xp: 30, to: '/app/journey' },
       { id: 'm3', title: { en: 'Save one opportunity that fits', id: 'Simpan satu peluang yang cocok' }, minutes: 10, done: false, xp: 20, to: '/app/discover' },
@@ -200,8 +252,21 @@ export const useOrbit = create<OrbitState>()(
         set(demo ? demoData(profile) : customData(profile));
       },
       updateProfile: (patch) => {
-        const p = get().profile;
+        const s = get();
+        const p = s.profile;
         if (!p) return;
+        if (patch.targetRole && patch.targetRole !== p.targetRole) {
+          const active = activeOrbitId(s);
+          const other = listOrbits(s).find((o) => o.id !== active && o.roleId === patch.targetRole);
+          // The goal already has its own orbit: move there instead of duplicating it.
+          if (other) {
+            get().switchOrbit(other.id);
+            const { targetRole: _role, ...rest } = patch;
+            set((st) => ({ profile: st.profile ? { ...st.profile, ...rest } : st.profile }));
+            return;
+          }
+          if (s.orbits.length) set({ orbits: s.orbits.map((o) => (o.id === active ? { ...o, roleId: patch.targetRole! } : o)) });
+        }
         set({ profile: { ...p, ...patch } });
       },
       signOut: () => {
@@ -353,6 +418,76 @@ export const useOrbit = create<OrbitState>()(
 
       pushAgent: (m) => set((s) => ({ agent: [...s.agent, m].slice(-60) })),
       clearAgent: () => set({ agent: [] }),
+
+      addMaterial: (m) => {
+        useGuide.getState().mark('vault');
+        set((s) => ({
+          materials: [m, ...s.materials],
+          xp: s.xp + 20,
+          activity: [activity({ kind: 'material', title: { en: `Added “${m.title}” to your Knowledge Vault`, id: `Menambahkan “${m.title}” ke Knowledge Vault` }, xp: 20 }), ...s.activity],
+          ...bumpStreak(s),
+        }));
+      },
+      updateMaterial: (id, patch) => set((s) => ({ materials: s.materials.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
+      deleteMaterial: (id) => {
+        const m = get().materials.find((x) => x.id === id);
+        set((s) => ({ materials: s.materials.filter((x) => x.id !== id) }));
+        return m;
+      },
+      restoreMaterial: (m) => set((s) => ({ materials: [m, ...s.materials].sort((a, b) => b.addedAt.localeCompare(a.addedAt)) })),
+
+      createOrbit: (roleId, note) => {
+        const s = get();
+        if (!s.profile) return '';
+        const list = listOrbits(s);
+        const active = activeOrbitId(s);
+        const existing = list.find((o) => (o.id === active ? s.profile!.targetRole : o.roleId) === roleId);
+        if (existing) {
+          get().switchOrbit(existing.id);
+          return existing.id;
+        }
+        const orbit = makeOrbit(s.profile, roleId, note?.trim() || undefined);
+        set({
+          orbits: [...list, orbit],
+          activeOrbitId: active,
+          activity: [activity({ kind: 'orbit', title: { en: 'Created a new dream orbit', id: 'Membuat orbit impian baru' } }), ...s.activity],
+        });
+        get().switchOrbit(orbit.id);
+        return orbit.id;
+      },
+      switchOrbit: (id) => {
+        const s = get();
+        if (!s.profile) return;
+        const list = listOrbits(s);
+        const current = activeOrbitId(s);
+        const target = list.find((o) => o.id === id);
+        if (!target || id === current) return;
+        // Park the live journey on the current orbit, then load the target's.
+        const orbits = list.map((o) => {
+          if (o.id === current) return { ...o, roleId: s.profile!.targetRole, quests: s.quests, history: s.history, readiness30dAgo: s.readiness30dAgo };
+          if (o.id === id) return { id: o.id, roleId: o.roleId, createdAt: o.createdAt, note: o.note };
+          return o;
+        });
+        const profile = { ...s.profile, targetRole: target.roleId };
+        const quests = target.quests ?? [];
+        set({
+          orbits,
+          activeOrbitId: id,
+          profile,
+          quests,
+          history: target.history ?? [],
+          readiness30dAgo: target.readiness30dAgo ?? Math.round(readinessOf(currentDims(profile, quests))),
+        });
+      },
+      removeOrbit: (id) => {
+        const s = get();
+        const list = listOrbits(s);
+        if (id === activeOrbitId(s) || list.length < 2) return undefined;
+        const o = list.find((x) => x.id === id);
+        set({ orbits: list.filter((x) => x.id !== id) });
+        return o;
+      },
+      restoreOrbit: (o) => set((s) => ({ orbits: listOrbits(s).some((x) => x.id === o.id) ? s.orbits : [...listOrbits(s), o] })),
 
       toggleCampusProgram: (id) => set((s) => ({ campusPlanned: s.campusPlanned.includes(id) ? s.campusPlanned.filter((x) => x !== id) : [...s.campusPlanned, id] })),
       logActivity: (a) => set((s) => ({ activity: [activity(a), ...s.activity] })),

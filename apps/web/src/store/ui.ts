@@ -25,6 +25,13 @@ interface UiState {
   commandOpen: boolean;
   notificationsOpen: boolean;
   confirm: ConfirmRequest | null;
+  /** Dream-orbit manager (create / switch / remove). */
+  orbitsOpen: boolean;
+  /** Add-to-Knowledge-Vault dialog, optionally pre-linked to a class. */
+  addMaterial: { open: boolean; courseId?: string };
+  setOrbitsOpen: (open: boolean) => void;
+  openAddMaterial: (courseId?: string) => void;
+  closeAddMaterial: () => void;
   setTheme: (t: ThemePreference, origin?: { x: number; y: number }) => void;
   toggleSidebar: () => void;
   openAgent: (prompt?: { text: string; intent?: string; arg?: string }) => void;
@@ -101,6 +108,11 @@ export const useUi = create<UiState>((set, get) => ({
   commandOpen: false,
   notificationsOpen: false,
   confirm: null,
+  orbitsOpen: false,
+  addMaterial: { open: false },
+  setOrbitsOpen: (orbitsOpen) => set({ orbitsOpen }),
+  openAddMaterial: (courseId) => set({ addMaterial: { open: true, courseId }, agentOpen: false, commandOpen: false }),
+  closeAddMaterial: () => set((s) => ({ addMaterial: { ...s.addMaterial, open: false } })),
   setTheme: (theme, origin) => {
     try {
       if (theme === 'system') localStorage.removeItem(THEME_KEY);

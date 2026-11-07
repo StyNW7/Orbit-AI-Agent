@@ -19,7 +19,7 @@ import { ease } from '@/lib/motion';
 
 const PAGE_LABEL: Record<string, { en: string; id: string }> = {
   '/app': { en: 'Today', id: 'Hari Ini' },
-  '/app/learning': { en: 'Learning Map', id: 'Learning Map' },
+  '/app/learning': { en: 'Learn', id: 'Belajar' },
   '/app/universe': { en: 'Career Universe', id: 'Career Universe' },
   '/app/journey': { en: 'Journey', id: 'Journey' },
   '/app/discover': { en: 'Discover', id: 'Discover' },
@@ -164,7 +164,7 @@ export function AgentPanel() {
     setTimeout(() => {
       const s = useOrbit.getState();
       if (!s.profile) return;
-      const reply = composeReply(intent ?? detectIntent(text), { profile: s.profile, quests: s.quests, saved: s.saved, streak: s.streak, readiness30dAgo: s.readiness30dAgo, page: location.pathname }, arg);
+      const reply = composeReply(intent ?? detectIntent(text), { profile: s.profile, quests: s.quests, saved: s.saved, streak: s.streak, readiness30dAgo: s.readiness30dAgo, page: location.pathname, materials: s.materials }, arg);
       push({ id: uid('m'), role: 'agent', reply, at: new Date().toISOString() });
       setThinking(false);
     }, 1350);

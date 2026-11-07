@@ -6,7 +6,8 @@ import { tr, tx } from '@/lib/i18n';
 import { OPP_BY_ID, TYPE_LABEL } from '@/data/opportunities';
 import { KIND_DIMS, MILESTONE_BY_ID, questFromOpportunity } from '@/data/journey';
 import type { Course } from '@/data/courses';
-import type { Quest, QuestStatus } from '@/data/types';
+import type { Material, Quest, QuestStatus } from '@/data/types';
+import { ROLE_BY_ID } from '@/data/catalog';
 import { uid } from '@/lib/utils';
 import { useOrbit } from './orbit';
 import { useUi } from './ui';
@@ -166,5 +167,66 @@ export function requestClassQuest(course: Course, skill: string | undefined, onA
       sparkleToast(tr('Journey updated', 'Journey diperbarui'), tx(quest.title));
       onAdded?.();
     },
+  });
+}
+
+/** Ask to turn an assignment or project from the Knowledge Vault into a portfolio quest (human-in-the-loop). */
+export function requestEvidenceQuest(m: Material) {
+  const templateId = `mat:${m.id}`;
+  const existing = orbit().quests.find((q) => q.templateId === templateId);
+  if (existing) {
+    toast(tr('Already in your Journey', 'Sudah ada di Journey-mu'), { description: tx(existing.title) });
+    return;
+  }
+  const step = (id: string, en: string, idn: string) => ({ id, title: { en, id: idn }, done: false });
+  const role = orbit().profile?.targetRole;
+  const reqs = role ? ROLE_BY_ID[role].requirements.map((r) => r.skill) : [];
+  const quest: Quest = {
+    id: uid('q'),
+    templateId,
+    title: { en: `Polish “${m.title}” into a portfolio case study`, id: `Poles “${m.title}” menjadi studi kasus portofolio` },
+    description: {
+      en: 'Show the problem, your process, the trade-offs and the result — recruiters read case studies, not grades.',
+      id: 'Tunjukkan masalah, prosesmu, trade-off, dan hasilnya — rekruter membaca studi kasus, bukan nilai.',
+    },
+    milestoneId: 'prove',
+    status: 'todo',
+    kind: 'build',
+    xp: 180,
+    impact: 1.4,
+    dims: KIND_DIMS.build,
+    skill: m.skills.find((s) => reqs.includes(s.skill))?.skill ?? m.skills[0]?.skill,
+    createdAt: new Date().toISOString(),
+    steps: [
+      step('s1', 'Write the problem and your role in one paragraph', 'Tulis masalah dan peranmu dalam satu paragraf'),
+      step('s2', 'Add one measurable result', 'Tambahkan satu hasil yang terukur'),
+      step('s3', 'Publish it to your portfolio', 'Publikasikan ke portofolio'),
+    ],
+    order: 0,
+  };
+  useUi.getState().askConfirm({
+    title: tr('Orbit wants to update your Journey', 'Orbit ingin memperbarui Journey-mu'),
+    description: tr('This adds a portfolio quest to “{m}”. You can move or remove it anytime.', 'Ini menambahkan quest portofolio ke “{m}”. Kamu bisa memindahkan atau menghapusnya kapan saja.', {
+      m: tx(MILESTONE_BY_ID[quest.milestoneId].title),
+    }),
+    items: [{ label: tx(quest.title), meta: m.fileName ?? m.url ?? '' }],
+    impact: quest.impact,
+    icon: 'journey',
+    confirmLabel: tr('Confirm & Add', 'Konfirmasi & Tambah'),
+    onConfirm: () => {
+      orbit().addQuest(quest);
+      syncAchievements();
+      sparkleToast(tr('Journey updated', 'Journey diperbarui'), tx(quest.title));
+    },
+  });
+}
+
+/** Remove a material with an undo. */
+export function deleteMaterial(id: string) {
+  const m = orbit().deleteMaterial(id);
+  if (!m) return;
+  toast(tr('Removed from your Vault', 'Dihapus dari Vault'), {
+    description: m.title,
+    action: { label: tr('Undo', 'Urungkan'), onClick: () => orbit().restoreMaterial(m) },
   });
 }

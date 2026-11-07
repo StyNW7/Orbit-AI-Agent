@@ -1,20 +1,21 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
-import { ArrowUpRight, BookOpenCheck, Check, ChevronRight, Copy, Eye, GraduationCap, Hammer, Layers, MessageCircleQuestion, Presentation, Route, Target } from 'lucide-react';
+import { ArrowUpRight, BookOpenCheck, Check, ChevronRight, Copy, Eye, FileUp, GraduationCap, Hammer, Layers, Library, MessageCircleQuestion, Presentation, Route, Target } from 'lucide-react';
 import { Badge, Card } from '@/components/ui/primitives';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/form';
 import { Sheet } from '@/components/ui/overlays';
 import { FilterChips, Segmented } from '@/components/ui/tabs';
-import { EmptyState, PageHeader, SectionHeader, StatCard } from '@/components/shared/layout-blocks';
+import { EmptyState, SectionHeader, StatCard } from '@/components/shared/layout-blocks';
 import { LevelDots } from '@/components/shared/SkillLevel';
 import { LEVEL_LABEL, ROLES, ROLE_BY_ID, SKILL_BY_ID } from '@/data/catalog';
 import { BAND_LABEL, COURSE_LEVEL_LABEL, careersFor, courseRelevance, courseStatus, curriculumFor, relevanceBand, skillLinks, type Course, type CourseStatus, type RelevanceBand } from '@/data/courses';
 import type { Profile, RoleId } from '@/data/types';
 import { useOrbit } from '@/store/orbit';
 import { requestClassQuest } from '@/store/actions';
+import { useUi } from '@/store/ui';
 import { useIsDesktop } from '@/hooks/use-media';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -68,7 +69,8 @@ interface Row {
   gaps: string[];
 }
 
-export default function LearningPage() {
+/** The curriculum, class by class, read against a career lens. Rendered inside the Learn hub. */
+export function LearningMapView({ initialCourse }: { initialCourse?: string }) {
   const profile = useOrbit((s) => s.profile)!;
   const quests = useOrbit((s) => s.quests);
   const { t, l } = useT();
@@ -77,8 +79,8 @@ export default function LearningPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<Sort>('semester');
   const [semester, setSemester] = useState<number | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(initialCourse ?? null);
+  const [sheetOpen, setSheetOpen] = useState(Boolean(initialCourse) && !desktop);
   const role = ROLE_BY_ID[lens];
 
   const rows: Row[] = useMemo(
@@ -129,49 +131,38 @@ export default function LearningPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        stage={t('Learn', 'Belajar')}
-        eyebrow="Learning Map"
-        title={t('Your classes, pointed at {role}', 'Mata kuliahmu, terarah ke {role}', { role: l(role.name) })}
-        description={t(
-          'Orbit reads your {major} curriculum and shows what every class is for — the skills it builds, how much it matters for your goal, and how to turn it into evidence.',
-          'Orbit membaca kurikulum {major}-mu dan menunjukkan kegunaan setiap mata kuliah — skill yang dibangunnya, seberapa penting untuk tujuanmu, dan cara menjadikannya bukti nyata.',
-          { major: profile.major },
-        )}
-        actions={
-          <div className="flex items-center gap-2">
-            <label htmlFor="lens" className="flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground">
-              <Eye className="size-4" aria-hidden /> {t('Lens', 'Lensa')}
-            </label>
-            <Select id="lens" value={lens} onChange={(e) => setLens(e.target.value as RoleId)} className="h-10 w-[290px] max-w-[calc(100vw-120px)]">
-              {ROLES.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {l(r.name)}
-                  {r.id === profile.targetRole ? ` (${t('your goal', 'tujuanmu')})` : ''}
-                </option>
-              ))}
-            </Select>
-          </div>
-        }
-      />
-
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease, delay: 0.05 }} className="flex flex-col gap-3 rounded-2xl border border-border bg-gradient-to-r from-mint to-cream p-4 sm:flex-row sm:items-center sm:p-5">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface text-green-strong shadow-xs dark:text-green">
-          <Presentation className="size-5" aria-hidden />
-        </span>
-        <p className="min-w-0 flex-1 text-[14px] leading-relaxed">
-          <strong className="font-semibold">{t('Your lecturers teach. Orbit shows where it leads.', 'Dosenmu mengajar. Orbit menunjukkan arahnya.')}</strong>{' '}
-          <span className="text-muted-foreground">
-            {lens !== profile.targetRole
-              ? t('You are exploring through the {role} lens — your goal stays the same.', 'Kamu sedang menjelajah lewat lensa {role} — tujuanmu tidak berubah.', { role: l(role.name) })
-              : t('Nothing here replaces your curriculum — it helps you decide where to go deeper.', 'Tidak ada yang menggantikan kurikulummu — ini membantumu memutuskan di mana perlu mendalami.')}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease }} className="flex flex-col gap-4 rounded-2xl border border-border bg-gradient-to-r from-mint to-cream p-4 sm:p-5 xl:flex-row xl:items-center">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface text-green-strong shadow-xs dark:text-green">
+            <Presentation className="size-5" aria-hidden />
           </span>
-        </p>
-        {lens !== profile.targetRole && (
-          <Button size="sm" variant="secondary" onClick={() => setLens(profile.targetRole)} className="shrink-0">
-            <Target /> {t('Back to my goal', 'Kembali ke tujuanku')}
-          </Button>
-        )}
+          <p className="min-w-0 flex-1 text-[14px] leading-relaxed">
+            <strong className="font-semibold">{t('Your lecturers teach. Orbit shows where it leads.', 'Dosenmu mengajar. Orbit menunjukkan arahnya.')}</strong>{' '}
+            <span className="text-muted-foreground">
+              {lens !== profile.targetRole
+                ? t('You are exploring through the {role} lens — your goal stays the same.', 'Kamu sedang menjelajah lewat lensa {role} — tujuanmu tidak berubah.', { role: l(role.name) })
+                : t('Your {major} curriculum, read against your goal. Switch the lens to see where else a class leads.', 'Kurikulum {major}-mu, dibaca terhadap tujuanmu. Ganti lensa untuk melihat ke mana lagi sebuah kelas membawamu.', { major: profile.major })}
+            </span>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="lens" className="flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground">
+            <Eye className="size-4" aria-hidden /> {t('Lens', 'Lensa')}
+          </label>
+          <Select id="lens" value={lens} onChange={(e) => setLens(e.target.value as RoleId)} className="h-10 w-[270px] max-w-full">
+            {ROLES.map((r) => (
+              <option key={r.id} value={r.id}>
+                {l(r.name)}
+                {r.id === profile.targetRole ? ` (${t('your goal', 'tujuanmu')})` : ''}
+              </option>
+            ))}
+          </Select>
+          {lens !== profile.targetRole && (
+            <Button size="sm" variant="secondary" onClick={() => setLens(profile.targetRole)}>
+              <Target /> {t('Back to my goal', 'Kembali ke tujuanku')}
+            </Button>
+          )}
+        </div>
       </motion.div>
 
       <motion.div variants={stagger(0.06)} initial="hidden" animate="show" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -235,7 +226,7 @@ export default function LearningPage() {
         </div>
       </Card>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <FilterChips
@@ -366,6 +357,10 @@ function CourseDetail({ row, profile, lens, onLens, started, hideTitle }: { row:
   const { t, l } = useT();
   const { course, score, status } = row;
   const role = ROLE_BY_ID[lens];
+  const allMaterials = useOrbit((s) => s.materials);
+  const openAdd = useUi((s) => s.openAddMaterial);
+  const navigate = useNavigate();
+  const classMaterials = allMaterials.filter((m) => m.courseId === course.id);
   const band = relevanceBand(score);
   const links = skillLinks(course, profile, lens);
   const careers = careersFor(course);
@@ -480,6 +475,33 @@ function CourseDetail({ row, profile, lens, onLens, started, hideTitle }: { row:
             <Route /> {t('Add as a Journey quest', 'Tambah sebagai quest Journey')}
           </Button>
         )}
+      </section>
+
+      <section className="rounded-2xl border border-border p-4">
+        <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+          <Library className="size-3.5" aria-hidden /> {t('Your materials for this class', 'Materimu untuk kelas ini')}
+        </div>
+        {classMaterials.length ? (
+          <ul className="mt-2 space-y-1">
+            {classMaterials.slice(0, 3).map((m) => (
+              <li key={m.id} className="truncate text-[13.5px] font-medium">
+                · {m.title}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-[13px] text-muted-foreground">{t('Add slides, notes or assignments from this class — Orbit reads them for skill evidence.', 'Tambahkan slide, catatan, atau tugas dari kelas ini — Orbit membacanya sebagai bukti skill.')}</p>
+        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="xs" variant="secondary" onClick={() => openAdd(course.id)}>
+            <FileUp /> {t('Add material', 'Tambah materi')}
+          </Button>
+          {classMaterials.length > 0 && (
+            <Button size="xs" variant="ghost" onClick={() => navigate('/app/learning?view=vault')}>
+              {t('Open Vault ({n})', 'Buka Vault ({n})', { n: classMaterials.length })}
+            </Button>
+          )}
+        </div>
       </section>
 
       <section className="rounded-2xl border border-border p-4">

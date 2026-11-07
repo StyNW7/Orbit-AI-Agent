@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
-import { ArrowRight, Bookmark, Check, Gauge, Orbit, PartyPopper, Route, Sparkles, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Check, GraduationCap, Library, PartyPopper, Rocket, Route, Sparkles, X, type LucideIcon } from 'lucide-react';
 import { ProgressBar } from '@/components/ui/primitives';
 import { Tooltip } from '@/components/ui/overlays';
-import { useOrbit } from '@/store/orbit';
 import { useUi } from '@/store/ui';
 import { useGuide } from '@/store/guide';
 import { useT } from '@/lib/i18n';
@@ -13,6 +12,7 @@ import { ease } from '@/lib/motion';
 
 interface Step {
   id: string;
+  stage: string;
   icon: LucideIcon;
   title: string;
   body: string;
@@ -20,51 +20,57 @@ interface Step {
   go: () => void;
 }
 
-/** First-run checklist that walks a student through Orbit's core loop: understand → explore → save → plan → ask. */
+/** First-run checklist that walks a learner through Orbit's single loop: Dream → Learn → Plan → Grow. */
 export function GettingStarted() {
   const seen = useGuide((s) => s.seen);
   const dismissed = useGuide((s) => s.dismissed);
   const setDismissed = useGuide((s) => s.setDismissed);
-  const savedCount = useOrbit((s) => Object.keys(s.saved).length);
   const openAgent = useUi((s) => s.openAgent);
+  const setOrbitsOpen = useUi((s) => s.setOrbitsOpen);
+  const openAddMaterial = useUi((s) => s.openAddMaterial);
   const navigate = useNavigate();
   const { t } = useT();
 
   const steps: Step[] = [
     {
-      id: 'intelligence',
-      icon: Gauge,
-      title: t('Understand your score', 'Pahami skor kesiapanmu'),
-      body: t('See the six dimensions behind your readiness.', 'Lihat enam dimensi di balik kesiapanmu.'),
-      done: Boolean(seen.intelligence),
-      go: () => navigate('/app/intelligence'),
+      id: 'orbit',
+      stage: t('Dream', 'Impian'),
+      icon: Rocket,
+      title: t('Check your dream orbit', 'Cek orbit impianmu'),
+      body: t('One orbit per career dream — switch or add one from the top bar.', 'Satu orbit untuk tiap impian karier — ganti atau tambah dari bar atas.'),
+      done: Boolean(seen.orbit),
+      go: () => setOrbitsOpen(true),
     },
     {
-      id: 'universe',
-      icon: Orbit,
-      title: t('Explore your Universe', 'Jelajahi Career Universe'),
-      body: t('Skills, gaps and opportunities on one map.', 'Skill, gap, dan peluang dalam satu peta.'),
-      done: Boolean(seen.universe),
-      go: () => navigate('/app/universe'),
+      id: 'vault',
+      stage: t('Learn', 'Belajar'),
+      icon: Library,
+      title: t('Add a learning material', 'Tambah satu materi'),
+      body: t('Slides, notes or an assignment — Orbit finds the skills inside.', 'Slide, catatan, atau tugas — Orbit menemukan skill di dalamnya.'),
+      done: Boolean(seen.vault),
+      go: () => openAddMaterial(),
     },
     {
-      id: 'save',
-      icon: Bookmark,
-      title: t('Save an opportunity', 'Simpan satu peluang'),
-      body: t('Pick a job, course or mentor that fits you.', 'Pilih pekerjaan, kursus, atau mentor yang cocok.'),
-      done: savedCount > 0,
-      go: () => navigate('/app/discover'),
+      id: 'learning',
+      stage: t('Learn', 'Belajar'),
+      icon: GraduationCap,
+      title: t('See what your classes are for', 'Lihat kegunaan mata kuliahmu'),
+      body: t('Every class, mapped to the career it powers.', 'Setiap mata kuliah, dipetakan ke karier yang didukungnya.'),
+      done: Boolean(seen.learning),
+      go: () => navigate('/app/learning?view=map'),
     },
     {
       id: 'journey',
+      stage: t('Plan', 'Rencana'),
       icon: Route,
       title: t('Plan your Journey', 'Rencanakan Journey-mu'),
-      body: t('Turn goals into quests you can tick off.', 'Ubah tujuan jadi quest yang bisa dicentang.'),
+      body: t('Turn what to learn into quests you can tick off.', 'Ubah yang perlu dipelajari jadi quest yang bisa dicentang.'),
       done: Boolean(seen.journey),
       go: () => navigate('/app/journey'),
     },
     {
       id: 'agent',
+      stage: t('Grow', 'Tumbuh'),
       icon: Sparkles,
       title: t('Ask Orbit Agent', 'Tanya Orbit Agent'),
       body: t('Get an explained answer to “what next?”.', 'Dapatkan jawaban “langkah berikutnya?” beserta alasannya.'),
@@ -102,7 +108,7 @@ export function GettingStarted() {
               <div className="min-w-0">
                 <div className="eyebrow text-green-strong dark:text-green">{complete ? t('All set', 'Semua siap') : t('Start here', 'Mulai di sini')}</div>
                 <h2 id="guide-title" className="mt-1 font-display text-[19px] font-bold tracking-tight">
-                  {complete ? t('You know your way around Orbit.', 'Kamu sudah menguasai dasar-dasar Orbit.') : t('Five steps to get the most out of Orbit', 'Lima langkah untuk memaksimalkan Orbit')}
+                  {complete ? t('You know your way around Orbit.', 'Kamu sudah menguasai dasar-dasar Orbit.') : t('Your Orbit flow: Dream → Learn → Plan → Grow', 'Alur Orbit-mu: Impian → Belajar → Rencana → Tumbuh')}
                 </h2>
                 <p className="mt-0.5 text-[13.5px] text-muted-foreground">
                   {complete
@@ -139,11 +145,11 @@ export function GettingStarted() {
                 </button>
               </motion.div>
             ) : (
-              <ol className="relative mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+              <ol className="relative mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
                 {steps.map((s, i) => {
                   const isNext = s.id === next?.id;
                   return (
-                    <li key={s.id} className={cn(i === steps.length - 1 && 'sm:col-span-2 xl:col-span-1')}>
+                    <li key={s.id} className={cn(i === steps.length - 1 && 'sm:col-span-2 lg:col-span-1')}>
                       <button
                         type="button"
                         onClick={s.go}
@@ -162,6 +168,7 @@ export function GettingStarted() {
                           {s.done ? <Check className="size-4" strokeWidth={3} /> : i + 1}
                         </span>
                         <span className="min-w-0 flex-1">
+                          <span className="mb-0.5 block text-[10.5px] font-bold uppercase tracking-[0.12em] text-subtle-foreground">{s.stage}</span>
                           <span className={cn('flex items-center gap-1.5 text-[13.5px] font-semibold leading-snug', s.done && 'text-muted-foreground')}>
                             <s.icon className="size-3.5 shrink-0 text-green" aria-hidden />
                             {s.title}

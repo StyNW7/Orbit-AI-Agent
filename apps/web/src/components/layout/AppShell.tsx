@@ -11,6 +11,8 @@ import { PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV, type NavItem } from './nav';
 import { CommandPalette } from './CommandPalette';
 import { NotificationsPanel } from './NotificationsPanel';
 import { AgentPanel } from '@/components/agent/AgentPanel';
+import { OrbitSwitcher, OrbitsModal, useOrbitRows } from '@/components/orbits/Orbits';
+import { AddMaterialModal } from '@/features/learning/AddMaterialModal';
 import { useOrbit, useInsights } from '@/store/orbit';
 import { useUi } from '@/store/ui';
 import { useGuide } from '@/store/guide';
@@ -61,6 +63,8 @@ function Sidebar() {
   const profile = useOrbit((s) => s.profile);
   const xp = useOrbit((s) => s.xp);
   const insights = useInsights();
+  const setOrbitsOpen = useUi((s) => s.setOrbitsOpen);
+  const orbitCount = useOrbitRows().length;
   const { t, l } = useT();
   const lvl = levelInfo(xp);
 
@@ -125,9 +129,16 @@ function Sidebar() {
 
         <div className="mt-auto pt-4">
           {!collapsed && profile && insights && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-mint to-cream p-4">
+            <motion.button
+              type="button"
+              onClick={() => setOrbitsOpen(true)}
+              aria-label={t('Manage your dream orbits', 'Kelola orbit impianmu')}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-3 block w-full overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-mint to-cream p-4 text-left transition hover:border-border-strong hover:shadow-card focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--ring)]"
+            >
               <div className="flex items-center justify-between">
-                <span className="eyebrow text-[10.5px]">{t('Primary orbit', 'Orbit utama')}</span>
+                <span className="eyebrow text-[10.5px]">{orbitCount > 1 ? t('Active orbit · {n} dreams', 'Orbit aktif · {n} impian', { n: orbitCount }) : t('Active orbit', 'Orbit aktif')}</span>
                 <span className="tabular inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-[11.5px] font-bold text-green-strong shadow-xs dark:text-green">
                   <span className="size-1.5 rounded-full bg-green" />
                   {Math.round(insights.readiness)}%
@@ -143,7 +154,7 @@ function Sidebar() {
                 </span>
               </div>
               <ProgressBar value={lvl.progress} size="sm" tone="gradient" className="mt-1.5" label="XP" />
-            </motion.div>
+            </motion.button>
           )}
           <SideLink item={SETTINGS_NAV} collapsed={collapsed} />
           {collapsed && (
@@ -242,6 +253,7 @@ function Topbar() {
           <Logo className="hidden sm:inline-flex" />
           <OrbitMark className="sm:hidden" />
         </Link>
+        <OrbitSwitcher />
         <button
           type="button"
           onClick={() => setCommand(true)}
@@ -375,6 +387,10 @@ export default function AppShell() {
   useEffect(() => {
     if (agentOpen) markGuide('agent');
   }, [agentOpen, markGuide]);
+  const orbitsOpen = useUi((s) => s.orbitsOpen);
+  useEffect(() => {
+    if (orbitsOpen) markGuide('orbit');
+  }, [orbitsOpen, markGuide]);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -395,6 +411,8 @@ export default function AppShell() {
       <AgentPanel />
       <CommandPalette />
       <NotificationsPanel />
+      <OrbitsModal />
+      <AddMaterialModal />
     </div>
   );
 }

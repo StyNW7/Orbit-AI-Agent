@@ -529,13 +529,13 @@ function FromYourClasses() {
               ? t('Coming up next — and what they will do for your {role} goal', 'Berikutnya — dan manfaatnya untuk tujuan {role}-mu', { role })
               : t('Classes you have finished that power your {role} goal', 'Mata kuliah yang sudah selesai dan mendukung tujuan {role}-mu', { role })
         }
-        action={<CardLink to="/app/learning">Learning Map</CardLink>}
+        action={<CardLink to="/app/learning?view=map">Learning Map</CardLink>}
       />
       <div className="grid gap-3 md:grid-cols-3">
         {items.map(({ c, score }) => {
           const band = relevanceBand(score);
           return (
-            <Link key={c.id} to="/app/learning" className="card-interactive group flex flex-col rounded-2xl border border-border bg-surface p-4">
+            <Link key={c.id} to={`/app/learning?view=map&course=${c.id}`} className="card-interactive group flex flex-col rounded-2xl border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-2">
                 <Badge tone={band === 'core' || band === 'strong' ? 'green' : band === 'useful' ? 'orange' : 'neutral'}>{l(BAND_LABEL[band])}</Badge>
                 <span className="tabular text-[12.5px] font-bold text-green-strong dark:text-green">{score}%</span>

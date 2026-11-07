@@ -6,7 +6,9 @@
 import { tr, tx } from '@/lib/i18n';
 import { ROLE_BY_ID, SKILL_BY_ID } from '@/data/catalog';
 import { OPPORTUNITIES, OPP_BY_ID } from '@/data/opportunities';
-import type { Profile, Quest, QuestStatus, SavedItem } from '@/data/types';
+import type { Material, Profile, Quest, QuestStatus, SavedItem } from '@/data/types';
+import { COURSE_BY_ID } from '@/data/courses';
+import { studyPicks, vaultCoverage } from './knowledge';
 import { DIM_LONG, insightsFor, matchOpportunity, nextBestAction, skillProfile } from './intelligence';
 
 export type AgentAction =
@@ -42,6 +44,7 @@ export interface AgentContext {
   streak: number;
   readiness30dAgo: number;
   page: string;
+  materials?: Material[];
 }
 
 export const SUGGESTIONS = [
@@ -50,9 +53,11 @@ export const SUGGESTIONS = [
   { en: 'Which opportunity fits me best?', id: 'Peluang mana yang paling cocok untuk saya?' },
   { en: 'How can I improve my readiness?', id: 'Bagaimana cara meningkatkan kesiapan saya?' },
   { en: 'Build me a learning plan.', id: 'Buatkan saya rencana belajar.' },
+  { en: 'What should I study next from my materials?', id: 'Apa yang harus saya pelajari berikutnya dari materi saya?' },
 ];
 
 const INTENTS: [string, RegExp][] = [
+  ['materials', /material|vault|slide|ppt|file|assignment|homework|my notes|materi|tugas|catatan|berkas|dari materi/i],
   ['alternatives', /alternativ|other option|pilihan lain|alternatif/i],
   ['gap', /gap|weak|lack|missing|kekurangan|kelemahan|celah|kurang/i],
   ['opportunity', /opportunit|job|intern|fit|role|peluang|lowongan|magang|pekerjaan|cocok/i],
@@ -255,6 +260,38 @@ export function composeReply(intent: string, ctx: AgentContext, arg?: string): A
       };
     }
 
+    case 'materials': {
+      const mats = ctx.materials ?? [];
+      if (!mats.length)
+        return {
+          intent,
+          headline: tr('Your Knowledge Vault is empty — add one material and I can plan from it.', 'Knowledge Vault-mu masih kosong — tambahkan satu materi dan aku bisa menyusun rencana darinya.'),
+          context,
+          reason: tr('Slides, notes, assignments or projects from your classes show what you already know.', 'Slide, catatan, tugas, atau proyek dari kelasmu menunjukkan apa yang sudah kamu kuasai.'),
+          actions: [{ kind: 'open', to: '/app/learning?view=vault', label: tr('Open Knowledge Vault', 'Buka Knowledge Vault'), primary: true }],
+        };
+      const cov = vaultCoverage(mats, profile);
+      const covered = cov.filter((c) => c.covered).length;
+      const picks = studyPicks(mats, profile);
+      const top = picks[0];
+      const opp = top?.oppId;
+      return {
+        intent,
+        headline: top
+          ? tr('Study {s} next — your materials barely cover it.', 'Pelajari {s} berikutnya — materimu belum mencakupnya.', { s: tx(SKILL_BY_ID[top.skill].name) })
+          : tr('Your materials cover every gap for {role}. Time to show it off.', 'Materimu sudah mencakup semua gap untuk {role}. Saatnya ditunjukkan.', { role: roleName }),
+        context: tr('I read {n} materials in your Vault against your {role} goal.', 'Aku membaca {n} materi di Vault-mu terhadap tujuan {role}.', { n: mats.length, role: roleName }),
+        reason: tr('{c} of {t} skills {role} needs already have evidence in your materials.', '{c} dari {t} skill yang dibutuhkan {role} sudah ada buktinya di materimu.', { c: covered, t: cov.length, role: roleName }),
+        bullets: picks.map((p) => ({
+          label: tx(SKILL_BY_ID[p.skill].name),
+          value: p.courseId && COURSE_BY_ID[p.courseId] ? tr('Class: {c}', 'Kelas: {c}', { c: tx(COURSE_BY_ID[p.courseId].name) }) : p.oppId ? oppTitle(p.oppId) : undefined,
+        })),
+        actions: [
+          ...(opp ? [{ kind: 'add-opp' as const, oppId: opp, label: tr('Add course to Journey', 'Tambah kursus ke Journey'), primary: true }] : []),
+          { kind: 'open', to: '/app/learning?view=vault', label: tr('Open Knowledge Vault', 'Buka Knowledge Vault'), primary: !opp },
+        ],
+      };
+    }
     case 'hello':
       return {
         intent,

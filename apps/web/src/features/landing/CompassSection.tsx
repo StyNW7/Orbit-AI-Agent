@@ -306,7 +306,7 @@ export function CompassSection() {
               {t('Inside Orbit, the Learning Map does this for your whole curriculum — semester by semester, against your own skill levels.', 'Di dalam Orbit, Learning Map melakukan ini untuk seluruh kurikulummu — per semester, dibandingkan dengan level skill-mu sendiri.')}
             </p>
             <Button asChild size="lg" className="shrink-0">
-              <Link to={orbitMode === 'none' ? '/start?demo=1' : '/app/learning'}>
+              <Link to={orbitMode === 'none' ? '/start?demo=1' : '/app/learning?view=map'}>
                 {t('Open my Learning Map', 'Buka Learning Map saya')} <ArrowRight />
               </Link>
             </Button>

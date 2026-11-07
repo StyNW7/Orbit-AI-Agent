@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { AnimatePresence, motion, useInView, useScroll, useTransform } from 'motion/react';
 import {
   ArrowRight,
-  Bell,
   BookOpen,
   BriefcaseBusiness,
   CalendarDays,
@@ -14,16 +13,16 @@ import {
   GraduationCap,
   Languages,
   Layers,
+  Library,
   Loader2,
-  NotebookPen,
   Orbit as OrbitIcon,
   Presentation,
   RotateCcw,
+  Rocket,
   Route,
   ShieldCheck,
   Sparkles,
   Target,
-  Trophy,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -398,7 +397,7 @@ export function CapabilitiesSection() {
     },
     { icon: OrbitIcon, title: 'Career Universe', body: t('An interactive graph of everything connected to your goal.', 'Grafik interaktif dari semua yang terhubung dengan tujuanmu.'), accent: 'dark' },
     { icon: Compass, title: t('Opportunity Intelligence', 'Opportunity Intelligence'), body: t('Jobs, internships, courses, events and mentors — every match explained.', 'Pekerjaan, magang, kursus, event, dan mentor — setiap match dijelaskan.') },
-    { icon: Route, title: t('Roadmap + Kanban Journey', 'Journey Roadmap + Kanban'), body: t('Drag quests forward; readiness and XP update instantly.', 'Seret quest ke depan; kesiapan dan XP langsung berubah.') },
+    { icon: Route, title: t('Roadmap + Kanban Journey', 'Journey Roadmap + Kanban'), body: t('Drag quests forward; readiness, XP and streaks update instantly.', 'Seret quest ke depan; kesiapan, XP, dan streak langsung berubah.') },
     {
       icon: Sparkles,
       title: 'Orbit Career Agent',
@@ -414,7 +413,7 @@ export function CapabilitiesSection() {
         </div>
       ),
     },
-    { icon: Trophy, title: t('Levels, streaks & achievements', 'Level, streak & achievement'), body: t('Gamification that rewards real progress — without feeling childish.', 'Gamifikasi yang menghargai progres nyata — tanpa terasa kekanak-kanakan.') },
+    { icon: Rocket, title: t('Multiple dream orbits', 'Banyak orbit impian'), body: t('Dream of more than one career? Each gets its own journey and readiness — switch in one tap.', 'Punya lebih dari satu impian karier? Masing-masing punya journey dan kesiapan sendiri — ganti dengan satu ketukan.') },
     {
       icon: GraduationCap,
       title: t('Learning Map', 'Learning Map'),
@@ -439,8 +438,33 @@ export function CapabilitiesSection() {
         </ul>
       ),
     },
-    { icon: NotebookPen, title: t('Career Journal', 'Career Journal'), body: t('Reflections, interview notes and decisions in one searchable place.', 'Refleksi, catatan wawancara, dan keputusan di satu tempat yang bisa dicari.') },
-    { icon: Bell, title: t('Reminders & deadlines', 'Pengingat & deadline'), body: t('Never miss an application, mentor session or quest.', 'Jangan lewatkan lamaran, sesi mentor, atau quest.') },
+    {
+      icon: Library,
+      title: 'Knowledge Vault',
+      body: t('Upload slides, notes, assignments and projects — or connect a link. Orbit finds the skills inside and plans what to study next.', 'Unggah slide, catatan, tugas, dan proyek — atau hubungkan tautan. Orbit menemukan skill di dalamnya dan merencanakan apa yang dipelajari berikutnya.'),
+      className: 'md:col-span-2',
+      accent: 'orange',
+      visual: (
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-[12.5px]">
+          <ul className="space-y-1.5">
+            {['Statistika_W9.pptx', 'Tugas_SQL.sql', 'PRD_Project.docx'].map((f) => (
+              <li key={f} className="truncate rounded-lg border border-border bg-surface px-2.5 py-1.5 font-medium">
+                {f}
+              </li>
+            ))}
+          </ul>
+          <ArrowRight className="size-4 text-orange" aria-hidden />
+          <ul className="space-y-1.5">
+            {[['Statistics', 92], ['SQL', 94], [t('Product Docs', 'Dok. Produk'), 93]].map(([k, v]) => (
+              <li key={k as string} className="flex items-center justify-between gap-2 rounded-lg bg-muted-green px-2.5 py-1.5 font-semibold text-green-strong dark:text-green">
+                <span className="truncate">{k}</span>
+                <span className="tabular">{v}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+    },
     { icon: Users, title: 'Orbit for Campus', body: t('Aggregate insight for lecturers, advisors and career centers.', 'Insight agregat untuk dosen, pembimbing akademik, dan career center.') },
     { icon: Presentation, title: t('Complements educators', 'Melengkapi pendidik'), body: t('Teachers and lecturers keep teaching — Orbit shows learners why it matters.', 'Guru dan dosen tetap mengajar — Orbit menunjukkan kepada pelajar kenapa itu penting.') },
     { icon: Languages, title: t('Bilingual, light & dark', 'Bilingual, terang & gelap'), body: t('English and Bahasa Indonesia, with a carefully designed dark mode.', 'Bahasa Inggris dan Indonesia, dengan mode gelap yang dirancang cermat.') },
