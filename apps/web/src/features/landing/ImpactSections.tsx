@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, BookOpenCheck, Building2, Clock, GraduationCap, LifeBuoy, Minus, Plus, Sparkles, Target, TrendingUp, UsersRound, X, Check, Recycle } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Building2, Clock, Compass, GraduationCap, LifeBuoy, Minus, Plus, Presentation, Route, School, Sparkles, Target, TrendingUp, UserRound, UsersRound, X, Check, Recycle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CountUp } from '@/components/brand/brand';
 import { useOrbit } from '@/store/orbit';
@@ -13,18 +13,28 @@ import { SDG4_RED } from './MissionSection';
 
 export function ImpactSection() {
   const { t } = useT();
-  const before = [t('Hours jumping between job portals, course sites and notes', 'Berjam-jam berpindah antara portal kerja, situs kursus, dan catatan'), t('Guessing which skill to learn next', 'Menebak skill mana yang harus dipelajari'), t('No way to tell if effort is paying off', 'Tidak tahu apakah usaha membuahkan hasil')];
-  const after = [t('One profile connected to every opportunity', 'Satu profil terhubung ke semua peluang'), t('Gaps ranked by importance and real demand', 'Gap diurutkan berdasarkan kepentingan dan permintaan nyata'), t('A readiness score that moves with every quest', 'Skor kesiapan yang bergerak di setiap quest')];
+  const before = [
+    t('Studying for the exam without knowing why the class matters', 'Belajar demi ujian tanpa tahu kenapa pelajaran itu penting'),
+    t('Guessing which skill to learn next, from scattered sites', 'Menebak skill berikutnya dari situs yang tercecer'),
+    t('Career preparation starts only in the final semester', 'Persiapan karier baru dimulai di semester akhir'),
+    t('No way to tell if effort is paying off', 'Tidak tahu apakah usaha membuahkan hasil'),
+  ];
+  const after = [
+    t('Every class linked to the career it powers', 'Setiap pelajaran terhubung ke karier yang didukungnya'),
+    t('Gaps ranked by importance and real demand', 'Gap diurutkan berdasarkan kepentingan dan permintaan nyata'),
+    t('Readiness built semester by semester, from day one', 'Kesiapan dibangun semester demi semester, sejak hari pertama'),
+    t('A readiness score that moves with every quest', 'Skor kesiapan yang bergerak di setiap quest'),
+  ];
   return (
     <Section id="impact">
       <div className="container-orbit">
-        <SectionIntro center eyebrow={t('Impact', 'Dampak')} title={t('From scattered effort to focused growth.', 'Dari usaha yang tercecer ke pertumbuhan yang fokus.')} desc={t('What Orbit is designed to change for every student who uses it.', 'Apa yang dirancang Orbit untuk berubah bagi setiap mahasiswa yang menggunakannya.')} />
+        <SectionIntro center eyebrow={t('Impact', 'Dampak')} title={t('From scattered studying to focused growth.', 'Dari belajar yang tercecer ke pertumbuhan yang fokus.')} desc={t('What Orbit is designed to change for every learner who uses it — at school, on campus and after graduation.', 'Apa yang dirancang Orbit untuk berubah bagi setiap pelajar yang menggunakannya — di sekolah, di kampus, dan setelah lulus.')} />
         <motion.div variants={stagger(0.08)} {...reveal} className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
             { icon: Clock, value: <><span className="text-muted-foreground line-through decoration-2">3–5h</span> → 30m</>, label: t('Weekly planning time, targeted', 'Target waktu perencanaan mingguan') },
             { icon: Target, value: <CountUp value={1} />, label: t('Clear next best action, always', 'Next best action yang jelas, selalu') },
             { icon: TrendingUp, value: <CountUp value={6} />, label: t('Readiness dimensions, all explained', 'Dimensi kesiapan, semuanya dijelaskan') },
-            { icon: Sparkles, value: <CountUp value={100} suffix="%" />, label: t('Recommendations with a reason', 'Rekomendasi disertai alasan') },
+            { icon: GraduationCap, value: <CountUp value={100} suffix="%" />, label: t('Classes mapped to a career reason', 'Pelajaran terpetakan ke alasan karier') },
           ].map((m) => (
             <motion.div key={m.label} variants={fadeUp} className="card p-6">
               <m.icon className="size-5 text-green" />
@@ -76,9 +86,16 @@ export function CampusTeaser() {
           <div className="pointer-events-none absolute -right-32 -top-32 size-[420px] rounded-full bg-green/10 blur-3xl" aria-hidden />
           <div className="relative grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <SectionIntro eyebrow="Orbit for Campus" title={t('Smart career ecosystems for universities.', 'Ekosistem karier cerdas untuk universitas.')} desc={t('Orbit transforms individual career intelligence into actionable campus insight — so career centers can see gaps early and plan programs that actually move readiness.', 'Orbit mengubah career intelligence individu menjadi insight kampus yang actionable — sehingga career center bisa melihat gap lebih awal dan merencanakan program yang benar-benar meningkatkan kesiapan.')} />
+              <SectionIntro
+                eyebrow={t('Campus Innovation', 'Inovasi Kampus')}
+                title={t('Where curriculum meets career — with data.', 'Saat kurikulum bertemu karier — dengan data.')}
+                desc={t(
+                  'Orbit turns individual learning journeys into anonymised campus insight. Lecturers, academic advisors and career centers see which skills a cohort is missing and which courses feed them — so programs and advising are planned from evidence, not guesswork.',
+                  'Orbit mengubah perjalanan belajar individu menjadi insight kampus yang dianonimkan. Dosen, dosen pembimbing akademik, dan career center melihat skill yang kurang di suatu angkatan dan mata kuliah yang mendukungnya — sehingga program dan bimbingan direncanakan dari bukti, bukan tebakan.',
+                )}
+              />
               <ol className="mt-8 flex flex-wrap items-center gap-2 text-[13.5px] font-semibold">
-                {[t('Student', 'Mahasiswa'), t('Career Center', 'Career Center'), t('Learning', 'Pembelajaran'), t('Employer', 'Perusahaan')].map((s, i, arr) => (
+                {[t('Learner', 'Pelajar'), t('Lecturer & Advisor', 'Dosen & Pembimbing'), t('Curriculum', 'Kurikulum'), t('Industry', 'Industri')].map((s, i, arr) => (
                   <li key={s} className="flex items-center gap-2">
                     <span className={cn('rounded-full px-3 py-1.5', i % 2 ? 'bg-muted-orange text-orange-strong dark:text-orange' : 'bg-muted-green text-green-strong dark:text-green')}>{s}</span>
                     {i < arr.length - 1 && <ArrowRight className="size-4 text-subtle-foreground" />}
@@ -87,7 +104,7 @@ export function CampusTeaser() {
               </ol>
               <Button size="lg" asChild className="mt-8">
                 <Link to="/campus">
-                  <Building2 /> {t('Explore Campus Intelligence', 'Jelajahi Campus Intelligence')}
+                  <Building2 /> {t('Explore Campus Innovation', 'Jelajahi Inovasi Kampus')}
                 </Link>
               </Button>
             </div>
@@ -147,18 +164,18 @@ export function SdgSection() {
   const targets = [
     {
       code: '4.3',
-      goal: t('Equal access to quality tertiary education', 'Akses setara ke pendidikan tinggi berkualitas'),
-      how: t('Quality career guidance available to every student, anytime, free in the browser — not only during a career-center appointment.', 'Pendampingan karier berkualitas bisa diakses setiap mahasiswa, kapan saja, gratis di browser — bukan hanya saat jadwal konsultasi career center.'),
+      goal: t('Equal access to quality technical, vocational and tertiary education', 'Akses setara ke pendidikan vokasi, teknik, dan tinggi yang berkualitas'),
+      how: t('Goal-centred learning guidance for SMA/SMK students, university students and graduates alike — free in the browser, anytime, not only during a counselling appointment.', 'Panduan belajar yang berpusat pada tujuan untuk siswa SMA/SMK, mahasiswa, dan lulusan — gratis di browser, kapan saja, bukan hanya saat jadwal konseling.'),
     },
     {
       code: '4.4',
-      goal: t('More youth with relevant skills for decent work', 'Lebih banyak pemuda dengan skill relevan untuk pekerjaan layak'),
-      how: t('Skill gaps are measured against real job demand, then mapped to the courses, projects and mentors that close them.', 'Gap skill diukur dari permintaan lowongan nyata, lalu dipetakan ke kursus, proyek, dan mentor yang menutupnya.'),
+      goal: t('More youth and adults with relevant skills for decent work', 'Lebih banyak pemuda dan orang dewasa dengan skill relevan untuk pekerjaan layak'),
+      how: t('Every class is mapped to the skills employers actually ask for, and gaps are ranked by real demand — so learning effort flows to what builds employability.', 'Setiap pelajaran dipetakan ke skill yang benar-benar dicari perusahaan, dan gap diurutkan dari permintaan nyata — sehingga usaha belajar mengalir ke hal yang membangun employability.'),
     },
     {
       code: '4.5',
       goal: t('Eliminate disparities in access to education', 'Menghapus kesenjangan akses pendidikan'),
-      how: t('Bilingual (EN/ID), no cost, and private by default — career direction no longer depends on who you know.', 'Dwibahasa (EN/ID), tanpa biaya, dan privat — arah karier tidak lagi bergantung pada siapa yang kamu kenal.'),
+      how: t('Bilingual (EN/ID), no cost, mobile-friendly and private by default — knowing why you learn no longer depends on who you know.', 'Dwibahasa (EN/ID), tanpa biaya, nyaman di ponsel, dan privat — tahu alasan belajar tidak lagi bergantung pada siapa yang kamu kenal.'),
     },
   ];
   const flow = [
@@ -168,10 +185,10 @@ export function SdgSection() {
     { icon: GraduationCap, label: t('Decent work', 'Pekerjaan layak') },
   ];
   const items = [
-    { icon: GraduationCap, title: t('Learning connected to employability', 'Pembelajaran terhubung dengan employability'), body: t('Every course and quest is tied to a role and its real requirements.', 'Setiap kursus dan quest terhubung dengan peran dan kebutuhannya.') },
-    { icon: Target, title: t('Relevant skills, identified early', 'Skill relevan, teridentifikasi lebih awal'), body: t('Students see which skills matter before recruitment season.', 'Mahasiswa melihat skill penting sebelum musim rekrutmen.') },
+    { icon: Compass, title: t('Learning with a destination', 'Belajar dengan tujuan'), body: t('Every class, course and quest is tied to a career goal and its real requirements.', 'Setiap pelajaran, kursus, dan quest terhubung ke tujuan karier dan kebutuhan nyatanya.') },
+    { icon: Target, title: t('Relevant skills, identified early', 'Skill relevan, teridentifikasi lebih awal'), body: t('Learners see which skills matter from semester one — not in the last month before graduating.', 'Pelajar melihat skill penting sejak semester satu — bukan sebulan sebelum lulus.') },
     { icon: Recycle, title: t('Continuous, efficient learning', 'Belajar berkelanjutan dan efisien'), body: t('Less time wasted on scattered preparation, more on what moves readiness.', 'Lebih sedikit waktu terbuang, lebih banyak pada yang meningkatkan kesiapan.') },
-    { icon: Building2, title: t('Data-informed institutions', 'Institusi berbasis data'), body: t('Campuses design programs from aggregate gaps, not guesswork.', 'Kampus merancang program dari gap agregat, bukan tebakan.') },
+    { icon: Building2, title: t('Data-informed institutions', 'Institusi berbasis data'), body: t('Schools and campuses shape programs and advising from aggregate gaps, not guesswork.', 'Sekolah dan kampus merancang program dan bimbingan dari gap agregat, bukan tebakan.') },
   ];
   return (
     <Section id="sdg" className="overflow-hidden bg-surface-2/40">
@@ -201,8 +218,8 @@ export function SdgSection() {
             </motion.h2>
             <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease, delay: 0.1 }} className="mt-5 max-w-lg text-[17px] leading-relaxed text-muted-foreground">
               {t(
-                'Orbit supports SDG 4 — Quality Education — by connecting what students learn to the skills, experiences and opportunities that lead to meaningful work. Smart education, measured by real readiness.',
-                'Orbit mendukung SDG 4 — Pendidikan Berkualitas — dengan menghubungkan apa yang dipelajari mahasiswa ke skill, pengalaman, dan peluang yang membawa ke pekerjaan bermakna. Smart education, diukur dari kesiapan nyata.',
+                'Orbit supports SDG 4 — Quality Education — as a goal-centred learning system. Every class, course, project and roadmap a learner follows is connected to the skills and the career it leads to. Smart education, measured by real readiness.',
+                'Orbit mendukung SDG 4 — Pendidikan Berkualitas — sebagai sistem belajar yang berpusat pada tujuan. Setiap pelajaran, kursus, proyek, dan roadmap yang diikuti pelajar terhubung ke skill dan karier yang ditujunya. Smart education, diukur dari kesiapan nyata.',
               )}
             </motion.p>
             <motion.ol variants={stagger(0.12, 0.2)} {...reveal} className="mt-7 flex flex-wrap items-center gap-2" aria-label={t('How learning leads to work', 'Bagaimana belajar membawa ke pekerjaan')}>
@@ -249,8 +266,152 @@ export function SdgSection() {
             </motion.div>
           </div>
         </div>
+        <ComplementBlock />
       </div>
     </Section>
+  );
+}
+
+/** Orbit's role in the learning ecosystem: it complements schools, campuses and educators — it never replaces them. */
+function ComplementBlock() {
+  const { t } = useT();
+  const lanes = [
+    {
+      icon: Presentation,
+      who: t('Schools, campuses & educators', 'Sekolah, kampus & pendidik'),
+      role: t('Teach · assess · mentor', 'Mengajar · menilai · membimbing'),
+      tone: 'neutral' as const,
+      points: [
+        t('Deliver the curriculum and grade learning', 'Menyampaikan kurikulum dan menilai pembelajaran'),
+        t('Guide learners as teachers, lecturers and advisors', 'Membimbing sebagai guru, dosen, dan pembimbing akademik'),
+        t('Award the certificate and the degree', 'Memberikan ijazah dan gelar'),
+      ],
+    },
+    {
+      icon: Route,
+      who: 'Orbit',
+      role: t('Focus · connect · track', 'Memfokuskan · menghubungkan · memantau'),
+      tone: 'green' as const,
+      points: [
+        t('Maps every class to the career it powers', 'Memetakan setiap pelajaran ke karier yang didukungnya'),
+        t('Ranks what to learn next by real demand', 'Mengurutkan yang perlu dipelajari berikutnya dari permintaan nyata'),
+        t('Turns progress into a visible roadmap and score', 'Mengubah progres menjadi roadmap dan skor yang terlihat'),
+      ],
+    },
+    {
+      icon: UserRound,
+      who: t('You, the learner', 'Kamu, sang pelajar'),
+      role: t('Learn smarter, with purpose', 'Belajar lebih cerdas, dengan tujuan'),
+      tone: 'orange' as const,
+      points: [
+        t('Know why each lesson matters', 'Tahu kenapa setiap pelajaran penting'),
+        t('Spend effort where it counts most', 'Mencurahkan usaha di tempat yang paling berdampak'),
+        t('Graduate career-ready, not only graduated', 'Lulus dalam keadaan siap berkarier, bukan sekadar lulus'),
+      ],
+    },
+  ];
+  const nots = [
+    t('Not an online course that replaces lectures', 'Bukan kursus online pengganti perkuliahan'),
+    t('Not a grading or attendance system', 'Bukan sistem penilaian atau presensi'),
+    t('Not a substitute for teachers, counsellors or advisors', 'Bukan pengganti guru, konselor, atau dosen pembimbing'),
+  ];
+  const audience = [
+    { icon: School, label: t('SMA/SMK students', 'Siswa SMA/SMK') },
+    { icon: GraduationCap, label: t('University students', 'Mahasiswa') },
+    { icon: Sparkles, label: t('Fresh graduates', 'Fresh graduate') },
+    { icon: UsersRound, label: t('Job seekers', 'Pencari kerja') },
+  ];
+  return (
+    <motion.div
+      id="complement"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+      transition={{ duration: 0.7, ease }}
+      className="relative mt-16 scroll-mt-24 overflow-hidden rounded-[32px] border border-border bg-surface p-6 shadow-hover sm:p-10"
+    >
+      <div className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-green/10 blur-3xl" aria-hidden />
+      <div className="relative grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-white" style={{ background: SDG4_RED }}>
+            {t('Our role in education', 'Peran kami dalam pendidikan')}
+          </div>
+          <h3 className="mt-4 font-display text-[28px] font-extrabold leading-[1.08] tracking-[-0.03em] sm:text-[38px]">
+            {t('Orbit doesn’t replace your school, campus or lecturers.', 'Orbit tidak menggantikan sekolah, kampus, atau dosenmu.')} <span className="orbit-gradient-text">{t('It connects what they teach to where you’re going.', 'Orbit menghubungkan apa yang mereka ajarkan ke tujuanmu.')}</span>
+          </h3>
+        </div>
+        <p className="text-[15.5px] leading-relaxed text-muted-foreground sm:text-[16.5px]">
+          {t(
+            'Educators remain the heart of learning. Orbit is the layer around it that gives every learner — students, fresh graduates and job seekers — one goal-centred system: learning materials, roadmaps and progress all pointed at the career they want, so they learn smarter and more precisely.',
+            'Pendidik tetap menjadi jantung pembelajaran. Orbit adalah lapisan di sekitarnya yang memberi setiap pelajar — siswa, mahasiswa, fresh graduate, dan pencari kerja — satu sistem yang berpusat pada tujuan: materi belajar, roadmap, dan progres semuanya diarahkan ke karier yang diinginkan, sehingga mereka belajar lebih cerdas dan lebih tepat sasaran.',
+          )}
+        </p>
+      </div>
+
+      <motion.ol variants={stagger(0.12)} {...reveal} className="relative mt-10 grid gap-4 lg:grid-cols-3" aria-label={t('Who does what', 'Siapa melakukan apa')}>
+        {lanes.map((lane, i) => (
+          <motion.li key={lane.who} variants={fadeUp} className="relative">
+            <div
+              className={cn(
+                'flex h-full flex-col rounded-[24px] border p-5 sm:p-6',
+                lane.tone === 'green' ? 'border-green/35 bg-gradient-to-br from-mint to-surface shadow-card' : lane.tone === 'orange' ? 'border-orange/30 bg-gradient-to-br from-cream to-surface' : 'border-border bg-surface-2/60',
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-2xl', lane.tone === 'green' ? 'orbit-gradient text-white shadow-green' : lane.tone === 'orange' ? 'bg-orange text-white' : 'bg-surface text-foreground shadow-xs')}>
+                  <lane.icon className="size-5" aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <div className="font-display text-[17px] font-bold leading-tight">{lane.who}</div>
+                  <div className={cn('text-[12.5px] font-semibold', lane.tone === 'green' ? 'text-green-strong dark:text-green' : lane.tone === 'orange' ? 'text-orange-strong dark:text-orange' : 'text-muted-foreground')}>{lane.role}</div>
+                </div>
+              </div>
+              <ul className="mt-5 space-y-2.5">
+                {lane.points.map((p) => (
+                  <li key={p} className="flex gap-2.5 text-[14px] leading-snug">
+                    <Check className={cn('mt-0.5 size-4 shrink-0', lane.tone === 'orange' ? 'text-orange' : 'text-green')} strokeWidth={2.6} aria-hidden />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {i < lanes.length - 1 && (
+              <span className="absolute -right-[18px] top-1/2 z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-green shadow-card lg:flex" aria-hidden>
+                <Plus className="size-4" strokeWidth={2.6} />
+              </span>
+            )}
+          </motion.li>
+        ))}
+      </motion.ol>
+
+      <div className="relative mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <div className="rounded-[20px] border border-dashed border-border-strong p-5">
+          <div className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{t('What Orbit is not', 'Orbit bukan')}</div>
+          <ul className="mt-3 grid gap-2.5 sm:grid-cols-3">
+            {nots.map((n) => (
+              <li key={n} className="flex gap-2 text-[13.5px] leading-snug text-muted-foreground">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted-danger text-danger">
+                  <X className="size-3" strokeWidth={3} aria-hidden />
+                </span>
+                {n}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[13px] font-medium text-foreground">{t('Instead, it gives educators better context — and learners a clearer reason to learn.', 'Sebaliknya, Orbit memberi pendidik konteks yang lebih baik — dan pelajar alasan belajar yang lebih jelas.')}</p>
+        </div>
+        <div className="rounded-[20px] border border-border bg-surface-2/50 p-5">
+          <div className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{t('Built for every learner on the way to work', 'Untuk setiap pelajar menuju dunia kerja')}</div>
+          <ul className="mt-3 grid grid-cols-2 gap-2">
+            {audience.map((a) => (
+              <li key={a.label} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13px] font-semibold shadow-xs">
+                <a.icon className="size-4 shrink-0 text-green" aria-hidden />
+                <span className="min-w-0">{a.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -258,9 +419,11 @@ export function FaqSection() {
   const { t } = useT();
   const [open, setOpen] = useState<number | null>(0);
   const faqs = [
-    { q: t('Who is Orbit for?', 'Orbit untuk siapa?'), a: t('University students, final-year students, fresh graduates and early-career job seekers — and the career centers that support them.', 'Mahasiswa, mahasiswa tingkat akhir, fresh graduate, dan pencari kerja awal karier — serta career center yang mendampingi mereka.') },
+    { q: t('Does Orbit replace my school, campus or lecturers?', 'Apakah Orbit menggantikan sekolah, kampus, atau dosen?'), a: t('No. Teachers and lecturers still teach, assess and mentor you. Orbit is a goal-centred learning system around that: it shows how each class connects to the career you want, what to learn next and how far you have come — and it gives educators better context, not a smaller role.', 'Tidak. Guru dan dosen tetap mengajar, menilai, dan membimbingmu. Orbit adalah sistem belajar berpusat pada tujuan di sekitarnya: menunjukkan bagaimana setiap pelajaran terhubung ke karier yang kamu inginkan, apa yang dipelajari berikutnya, dan sejauh mana kemajuanmu — serta memberi pendidik konteks yang lebih baik, bukan mengurangi perannya.') },
+    { q: t('Who is Orbit for?', 'Orbit untuk siapa?'), a: t('SMA/SMK students choosing a direction, university students, fresh graduates and job seekers — plus the schools, campuses and career centers that support them.', 'Siswa SMA/SMK yang sedang memilih arah, mahasiswa, fresh graduate, dan pencari kerja — serta sekolah, kampus, dan career center yang mendampingi mereka.') },
+    { q: t('How does Orbit help me learn smarter?', 'Bagaimana Orbit membantu saya belajar lebih cerdas?'), a: t('The Learning Map reads your curriculum and shows, class by class, which career skills it builds and how relevant it is to your goal. It suggests an applied mini-project to turn each class into portfolio evidence and a question to bring to your lecturer — so effort goes where it counts.', 'Learning Map membaca kurikulummu dan menunjukkan, per pelajaran, skill karier yang dibangunnya dan seberapa relevan dengan tujuanmu. Orbit menyarankan proyek mini terapan untuk menjadikan setiap pelajaran bukti portofolio dan pertanyaan untuk dibawa ke dosen — sehingga usaha tercurah ke tempat yang tepat.') },
     { q: t('How is Career Readiness calculated?', 'Bagaimana Career Readiness dihitung?'), a: t('Orbit scores six dimensions — skills, experience, projects, education, portfolio and interview readiness — against what your target role expects. Each score shows why and what moves it.', 'Orbit menilai enam dimensi — skill, pengalaman, proyek, pendidikan, portofolio, dan kesiapan wawancara — terhadap ekspektasi peran targetmu. Setiap skor menunjukkan alasannya dan apa yang menggerakkannya.') },
-    { q: t('Is Orbit a job portal?', 'Apakah Orbit portal lowongan kerja?'), a: t('No. Orbit connects jobs, learning, mentors, projects and progress into one ecosystem, so you understand which action actually improves your readiness.', 'Bukan. Orbit menghubungkan pekerjaan, pembelajaran, mentor, proyek, dan progres dalam satu ekosistem, sehingga kamu memahami aksi mana yang benar-benar meningkatkan kesiapanmu.') },
+    { q: t('Is Orbit a job portal?', 'Apakah Orbit portal lowongan kerja?'), a: t('No. Job seekers still find openings here, but Orbit is first a learning system: it connects classes, courses, mentors, projects, opportunities and progress into one roadmap, so you understand which action actually improves your readiness.', 'Bukan. Pencari kerja tetap bisa menemukan lowongan di sini, tetapi Orbit pertama-tama adalah sistem belajar: menghubungkan pelajaran, kursus, mentor, proyek, peluang, dan progres dalam satu roadmap, sehingga kamu memahami aksi mana yang benar-benar meningkatkan kesiapanmu.') },
     { q: t('Will Orbit change my plan automatically?', 'Apakah Orbit mengubah rencanaku secara otomatis?'), a: t('Never. Orbit recommends and explains; important changes to your journey always require your confirmation.', 'Tidak pernah. Orbit merekomendasikan dan menjelaskan; perubahan penting pada journey-mu selalu memerlukan konfirmasimu.') },
     { q: t('Where is my data stored?', 'Di mana dataku disimpan?'), a: t('Your Orbit is stored privately in your browser. You can export or reset it anytime from Settings. Campuses only see aggregated, anonymised insight.', 'Orbit-mu tersimpan privat di browser. Kamu bisa mengekspor atau meresetnya kapan saja di Pengaturan. Kampus hanya melihat insight agregat yang dianonimkan.') },
     { q: t('Can I try it without signing up?', 'Bisakah mencoba tanpa mendaftar?'), a: t('Yes — explore as Naya, a final-year student aiming for Product Manager, and experience every feature in about two minutes.', 'Ya — jelajahi sebagai Naya, mahasiswa tingkat akhir yang menargetkan Product Manager, dan rasakan semua fitur dalam sekitar dua menit.') },
@@ -312,11 +475,11 @@ export function FinalCta() {
           ))}
           <div className="relative">
             <h2 className="mx-auto max-w-3xl font-display text-[40px] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[60px]">
-              {t('Grow with Orbit.', 'Tumbuh bersama Orbit.')}
+              {t('Learn with purpose.', 'Belajar dengan tujuan.')}
               <br />
-              <span className="bg-gradient-to-r from-[#4ee39a] to-orange bg-clip-text text-transparent">{t('Reach your career dream.', 'Raih karier impianmu.')}</span>
+              <span className="bg-gradient-to-r from-[#4ee39a] to-orange bg-clip-text text-transparent">{t('Grow into your career.', 'Tumbuh menuju kariermu.')}</span>
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-[17px] text-white/65">{t('Understand where you are, discover what matters, and always know your next step.', 'Pahami posisimu, temukan yang penting, dan selalu tahu langkah berikutnya.')}</p>
+            <p className="mx-auto mt-5 max-w-xl text-[17px] text-white/65">{t('Know why every lesson matters, focus on what counts, and always know your next step.', 'Pahami kenapa setiap pelajaran penting, fokus pada yang berdampak, dan selalu tahu langkah berikutnya.')}</p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="xl" asChild>
                 <Link to={mode === 'none' ? '/start' : '/app'}>

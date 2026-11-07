@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bell, Compass, Gauge, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
+import { Bell, Compass, Gauge, LineChart, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
 import { Logo, OrbitMark } from '@/components/brand/brand';
 import { Avatar, Kbd, ProgressBar } from '@/components/ui/primitives';
 import { DropdownContent, DropdownItem, DropdownLabel, DropdownMenu, DropdownSeparator, DropdownTrigger, Tooltip } from '@/components/ui/overlays';
@@ -184,6 +184,9 @@ function UserMenu() {
         <DropdownSeparator />
         <DropdownItem onSelect={() => navigate('/app/settings')}>
           <Settings /> {t('Profile & settings', 'Profil & pengaturan')}
+        </DropdownItem>
+        <DropdownItem onSelect={() => navigate('/app/progress')}>
+          <LineChart /> Progress
         </DropdownItem>
         <DropdownItem onSelect={() => navigate('/app/intelligence')}>
           <Gauge /> Career Intelligence

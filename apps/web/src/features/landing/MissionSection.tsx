@@ -24,26 +24,27 @@ export function MissionSection() {
     {
       icon: Compass,
       step: '01',
-      title: t('Understand where you stand', 'Pahami posisimu'),
-      body: t('A Career Readiness score across six dimensions — every number explains why it is what it is.', 'Skor Career Readiness dari enam dimensi — setiap angka menjelaskan alasannya.'),
+      title: t('Set your destination', 'Tentukan tujuanmu'),
+      body: t('Choose a career goal. Orbit maps the skills it needs and reads your readiness across six explained dimensions.', 'Pilih tujuan karier. Orbit memetakan skill yang dibutuhkan dan membaca kesiapanmu dari enam dimensi yang dijelaskan.'),
     },
     {
       icon: GraduationCap,
       step: '02',
       title: t('Learn what actually matters', 'Belajar yang benar-benar relevan'),
-      body: t('Skill gaps ranked by real job demand, then linked to courses, mentors and projects that close them.', 'Gap skill diurutkan dari kebutuhan lowongan nyata, lalu dihubungkan ke kursus, mentor, dan proyek yang menutupnya.'),
+      body: t('Every class, course and project is linked to that goal — with gaps ranked by real job demand.', 'Setiap pelajaran, kursus, dan proyek terhubung ke tujuan itu — dengan gap yang diurutkan dari kebutuhan lowongan nyata.'),
     },
     {
       icon: Route,
       step: '03',
-      title: t('Grow with a clear path', 'Bertumbuh dengan jalur yang jelas'),
+      title: t('Grow with a clear roadmap', 'Bertumbuh dengan roadmap yang jelas'),
       body: t('A step-by-step journey of quests, measurable progress, and one Next Best Action every day.', 'Journey bertahap berisi quest, progres terukur, dan satu Next Best Action setiap hari.'),
     },
   ];
   const audience = [
-    { icon: UserRound, label: t('University students', 'Mahasiswa') },
-    { icon: School, label: t('Fresh graduates', 'Fresh graduate') },
-    { icon: Building2, label: t('Campus career centers', 'Career center kampus') },
+    { icon: School, label: t('SMA/SMK students', 'Siswa SMA/SMK') },
+    { icon: GraduationCap, label: t('University students', 'Mahasiswa') },
+    { icon: UserRound, label: t('Fresh graduates & job seekers', 'Fresh graduate & pencari kerja') },
+    { icon: Building2, label: t('Schools & campuses', 'Sekolah & kampus') },
   ];
 
   return (
@@ -55,12 +56,12 @@ export function MissionSection() {
             eyebrow={t('Why Orbit exists', 'Tujuan Orbit')}
             title={
               <>
-                {t('Every student deserves to know', 'Setiap mahasiswa berhak tahu')} <span className="orbit-gradient-text">{t('their next step.', 'langkah berikutnya.')}</span>
+                {t('Every learner deserves to know why they learn —', 'Setiap pelajar berhak tahu untuk apa ia belajar —')} <span className="orbit-gradient-text">{t('and where it leads.', 'dan ke mana arahnya.')}</span>
               </>
             }
             desc={t(
-              'Orbit started from one question: what if what you learn on campus connected directly to being ready for work? Our goal is for every student — not only those with the right network — to understand where they stand, know which skills matter, and follow a clear plan.',
-              'Orbit berangkat dari satu pertanyaan: bagaimana jika apa yang dipelajari di kampus langsung terhubung dengan kesiapan kerja? Tujuan kami: setiap mahasiswa — bukan hanya yang punya koneksi — memahami posisinya, tahu skill yang penting, dan punya rencana yang jelas.',
+              'Orbit started from one question: what if everything you learn — at school, on campus or on your own — pointed at the career you want? Orbit doesn’t replace teachers or lecturers. It connects what they teach to a clear destination, so every learner — not only those with the right network — can focus, learn smarter and arrive ready for work.',
+              'Orbit berangkat dari satu pertanyaan: bagaimana jika semua yang kamu pelajari — di sekolah, di kampus, atau secara mandiri — mengarah ke karier yang kamu inginkan? Orbit tidak menggantikan guru atau dosen. Orbit menghubungkan apa yang mereka ajarkan ke tujuan yang jelas, sehingga setiap pelajar — bukan hanya yang punya koneksi — bisa fokus, belajar lebih cerdas, dan siap bekerja.',
             )}
           />
           <motion.ul variants={stagger(0.08)} {...reveal} className="flex flex-wrap gap-2 lg:justify-end" aria-label={t('Who Orbit is for', 'Orbit untuk siapa')}>
@@ -110,7 +111,7 @@ export function MissionSection() {
               {t('Sustainable Development Goal 4 · Quality Education', 'Tujuan Pembangunan Berkelanjutan 4 · Pendidikan Berkualitas')}
             </div>
             <p className="mt-1 text-[15.5px] font-semibold leading-snug">
-              {t('Orbit is built to support SDG 4 — inclusive, quality education that leads to relevant skills and decent work.', 'Orbit dirancang untuk mendukung SDG 4 — pendidikan berkualitas dan inklusif yang menghasilkan skill relevan dan pekerjaan layak.')}
+              {t('Orbit is built for SDG 4 — inclusive, quality education where learning leads to relevant skills and decent work. It complements schools and campuses; it never replaces them.', 'Orbit dirancang untuk SDG 4 — pendidikan berkualitas dan inklusif di mana belajar menghasilkan skill relevan dan pekerjaan layak. Orbit melengkapi sekolah dan kampus, tidak pernah menggantikannya.')}
             </p>
           </div>
           <button

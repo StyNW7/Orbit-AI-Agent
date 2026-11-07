@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarDays, Lightbulb, MousePointerClick, PlayCircle, Route, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
+import { ArrowRight, BookOpen, BriefcaseBusiness, GraduationCap, Lightbulb, MousePointerClick, PlayCircle, Route, School, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReadinessRing } from '@/components/brand/brand';
 import { useOrbit } from '@/store/orbit';
@@ -29,7 +29,7 @@ const NODES: HNode[] = [
   { id: 'intern', label: { en: 'Internship', id: 'Magang' }, icon: BriefcaseBusiness, x: 90, y: 63, tone: 'orange', kind: { en: '92% match', id: '92% cocok' } },
   { id: 'mentor', label: { en: 'Mentor', id: 'Mentor' }, icon: Users, x: 24, y: 86, tone: 'soft', kind: { en: 'People', id: 'Orang' } },
   { id: 'quest', label: { en: 'Case Study Quest', id: 'Quest Studi Kasus' }, icon: Route, x: 66, y: 91, tone: 'green', kind: { en: 'In progress', id: 'Berjalan' } },
-  { id: 'event', label: { en: 'Workshop', id: 'Workshop' }, icon: CalendarDays, x: 79, y: 9, tone: 'soft', kind: { en: 'Event', id: 'Event' } },
+  { id: 'class', label: { en: 'Statistics class', id: 'Kelas Statistika' }, icon: GraduationCap, x: 79, y: 9, tone: 'green', kind: { en: 'Campus course → Analytics', id: 'Mata kuliah → Analitik' } },
 ];
 
 function HeroOrbit() {
@@ -198,7 +198,7 @@ export function Hero() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 80]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0.3]);
-  const words = t('Your career is not a straight line.', 'Kariermu bukan garis lurus.').split(' ');
+  const words = t('Every lesson, aimed at your future.', 'Setiap pelajaran, terarah ke masa depanmu.').split(' ');
 
   return (
     <section className="relative overflow-hidden pb-20 pt-28 sm:pt-32 lg:pb-28 lg:pt-36">
@@ -218,13 +218,13 @@ export function Hero() {
             <Sdg4Mark size="sm" className="rounded-full" />
             <span className="min-w-0 truncate">
               <span className="text-muted-foreground">{t('Supports SDG 4 · ', 'Mendukung SDG 4 · ')}</span>
-              {t('Smart Education & Career Ecosystem', 'Ekosistem Smart Education & Karier')}
+              {t('Smart Education & Campus Innovation', 'Smart Education & Inovasi Kampus')}
             </span>
             <ArrowRight className="size-3.5 shrink-0 text-subtle-foreground transition-transform group-hover:translate-x-0.5" />
           </motion.button>
           <h1 className="mt-6 font-display text-[46px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[64px] lg:text-[72px]">
             {words.map((w, i) => {
-              const accent = i >= words.length - 3;
+              const accent = i >= words.length - 4;
               return (
                 <motion.span key={i} initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.7, ease, delay: 0.1 + i * 0.07 }} className={cn('mr-[0.22em] inline-block', accent && 'orbit-gradient-text pb-1')}>
                   {w}
@@ -233,8 +233,8 @@ export function Hero() {
             })}
           </h1>
           <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.55 }} className="mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground sm:text-[19px]">
-            {t('Your career is an orbit of skills, experiences, people, knowledge, and opportunities.', 'Kariermu adalah orbit dari skill, pengalaman, orang, pengetahuan, dan peluang.')}{' '}
-            <strong className="font-semibold text-foreground">{t('Orbit connects them and shows you where to go next.', 'Orbit menghubungkan semuanya dan menunjukkan ke mana kamu melangkah berikutnya.')}</strong>
+            {t('Orbit is a goal-centred learning system for students, fresh graduates and job seekers.', 'Orbit adalah sistem belajar yang berpusat pada tujuan untuk siswa, mahasiswa, fresh graduate, dan pencari kerja.')}{' '}
+            <strong className="font-semibold text-foreground">{t('It connects what you learn in class to the skills, roadmap and opportunities of the career you want — so you learn smarter, not just more.', 'Orbit menghubungkan apa yang kamu pelajari di kelas dengan skill, roadmap, dan peluang dari karier yang kamu inginkan — supaya kamu belajar lebih cerdas, bukan sekadar lebih banyak.')}</strong>
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.68 }} className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="xl" asChild>
@@ -255,6 +255,7 @@ export function Hero() {
           </motion.div>
           <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1 }} className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-[13.5px] text-muted-foreground">
             {[
+              { icon: School, l: t('Complements your school & lecturers', 'Melengkapi sekolah & dosenmu') },
               { icon: Sparkles, l: t('Explainable readiness score', 'Skor kesiapan yang dijelaskan') },
               { icon: ShieldCheck, l: t('Asks before changing your plan', 'Bertanya sebelum mengubah rencana') },
               { icon: Languages, l: 'English & Bahasa Indonesia' },

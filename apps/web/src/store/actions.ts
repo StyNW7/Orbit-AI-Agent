@@ -4,8 +4,10 @@
 import { toast } from 'sonner';
 import { tr, tx } from '@/lib/i18n';
 import { OPP_BY_ID, TYPE_LABEL } from '@/data/opportunities';
-import { MILESTONE_BY_ID, questFromOpportunity } from '@/data/journey';
-import type { QuestStatus } from '@/data/types';
+import { KIND_DIMS, MILESTONE_BY_ID, questFromOpportunity } from '@/data/journey';
+import type { Course } from '@/data/courses';
+import type { Quest, QuestStatus } from '@/data/types';
+import { uid } from '@/lib/utils';
 import { useOrbit } from './orbit';
 import { useUi } from './ui';
 import { announceAchievements, celebrateQuest, sparkleToast } from '@/lib/feedback';
@@ -118,3 +120,51 @@ export function requestReset(onDone?: () => void) {
 }
 
 export { syncAchievements };
+
+/** Ask to add a class's applied project to the Journey as a “Prove Skills” quest (human-in-the-loop). */
+export function requestClassQuest(course: Course, skill: string | undefined, onAdded?: () => void) {
+  const templateId = `class:${course.id}`;
+  const existing = orbit().quests.find((q) => q.templateId === templateId);
+  if (existing) {
+    toast(tr('Already in your Journey', 'Sudah ada di Journey-mu'), { description: tx(existing.title) });
+    return;
+  }
+  const name = { en: tx(course.name, 'en'), id: tx(course.name, 'id') };
+  const step = (id: string, en: string, idn: string) => ({ id, title: { en, id: idn }, done: false });
+  const quest: Quest = {
+    id: uid('q'),
+    templateId,
+    title: { en: `Turn “${name.en}” into evidence`, id: `Jadikan “${name.id}” bukti nyata` },
+    description: course.project,
+    milestoneId: 'prove',
+    status: 'todo',
+    kind: 'build',
+    xp: 180,
+    impact: 1.4,
+    dims: KIND_DIMS.build,
+    skill,
+    createdAt: new Date().toISOString(),
+    steps: [
+      step('s1', 'Agree the scope with your lecturer', 'Sepakati cakupannya dengan dosen'),
+      step('s2', 'Build it alongside the class assignment', 'Kerjakan bersamaan dengan tugas kuliah'),
+      step('s3', 'Publish it to your portfolio', 'Publikasikan ke portofolio'),
+    ],
+    order: 0,
+  };
+  useUi.getState().askConfirm({
+    title: tr('Orbit wants to update your Journey', 'Orbit ingin memperbarui Journey-mu'),
+    description: tr('This adds an applied class project to “{m}”. You can move or remove it anytime.', 'Ini menambahkan proyek terapan dari mata kuliah ke “{m}”. Kamu bisa memindahkan atau menghapusnya kapan saja.', {
+      m: tx(MILESTONE_BY_ID[quest.milestoneId].title),
+    }),
+    items: [{ label: tx(quest.title), meta: tx(course.project) }],
+    impact: quest.impact,
+    icon: 'journey',
+    confirmLabel: tr('Confirm & Add', 'Konfirmasi & Tambah'),
+    onConfirm: () => {
+      orbit().addQuest(quest);
+      syncAchievements();
+      sparkleToast(tr('Journey updated', 'Journey diperbarui'), tx(quest.title));
+      onAdded?.();
+    },
+  });
+}

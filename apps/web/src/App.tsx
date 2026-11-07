@@ -19,6 +19,7 @@ const OnboardingPage = lazy(() => import('@/features/onboarding/OnboardingPage')
 const AppShell = lazy(() => import('@/components/layout/AppShell'));
 const TodayPage = lazy(() => import('@/features/today/TodayPage'));
 const IntelligencePage = lazy(() => import('@/features/intelligence/IntelligencePage'));
+const LearningPage = lazy(() => import('@/features/learning/LearningPage'));
 const UniversePage = lazy(() => import('@/features/universe/UniversePage'));
 const JourneyPage = lazy(() => import('@/features/journey/JourneyPage'));
 const DiscoverPage = lazy(() => import('@/features/discover/DiscoverPage'));
@@ -108,6 +109,7 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <Inner><TodayPage /></Inner> },
               { path: 'intelligence', element: <Inner><IntelligencePage /></Inner> },
+              { path: 'learning', element: <Inner><LearningPage /></Inner> },
               { path: 'universe', element: <Inner><UniversePage /></Inner> },
               { path: 'journey', element: <Inner><JourneyPage /></Inner> },
               { path: 'discover', element: <Inner><DiscoverPage /></Inner> },

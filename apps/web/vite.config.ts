@@ -42,9 +42,9 @@ const config = {
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Orbit — Smart Career & Learning Ecosystem',
+        name: 'Orbit — Smart Education & Career Ecosystem',
         short_name: 'Orbit',
-        description: 'Understand your career readiness, close skill gaps and always know your next best step.',
+        description: 'Connect what you learn to the career you want: a Learning Map, explainable readiness and a clear next step.',
         theme_color: '#0AB46A',
         background_color: '#F8FAF9',
         display: 'standalone',

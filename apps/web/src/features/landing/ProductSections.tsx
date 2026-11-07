@@ -11,11 +11,13 @@ import {
   Compass,
   FolderKanban,
   Gauge,
+  GraduationCap,
   Languages,
   Layers,
   Loader2,
   NotebookPen,
   Orbit as OrbitIcon,
+  Presentation,
   RotateCcw,
   Route,
   ShieldCheck,
@@ -28,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { OrbitMark, ReadinessRing } from '@/components/brand/brand';
 import { FilterChips } from '@/components/ui/tabs';
+import { COURSE_BY_ID, courseRelevance } from '@/data/courses';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { ease, fadeUp, reveal, stagger } from '@/lib/motion';
@@ -175,7 +178,7 @@ export function JourneyPreview() {
     <Section id="journey" className="overflow-hidden bg-surface-2/40">
       <div ref={ref} className="container-orbit grid items-center gap-14 lg:grid-cols-2">
         <div>
-          <SectionIntro eyebrow={t('Adaptive Career Journey', 'Adaptive Career Journey')} title={t('A roadmap that moves when you do.', 'Roadmap yang bergerak bersamamu.')} desc={t('Six stages from discovery to your first application. Switch between Roadmap and Kanban, drag quests forward, and watch readiness respond.', 'Enam tahap dari eksplorasi hingga lamaran pertama. Beralih antara Roadmap dan Kanban, seret quest ke depan, dan lihat kesiapanmu naik.')} />
+          <SectionIntro eyebrow={t('Adaptive Career Journey', 'Adaptive Career Journey')} title={t('A learning roadmap that moves when you do.', 'Roadmap belajar yang bergerak bersamamu.')} desc={t('Six stages from discovery to your first application. Switch between Roadmap and Kanban, drag quests forward, and watch readiness respond.', 'Enam tahap dari eksplorasi hingga lamaran pertama. Beralih antara Roadmap dan Kanban, seret quest ke depan, dan lihat kesiapanmu naik.')} />
           <div className="relative mt-10">
             <svg viewBox="0 0 400 120" className="w-full" aria-hidden>
               <path d="M10 90 C 70 90, 70 30, 130 30 S 200 90, 260 90 S 330 30, 390 30" stroke="var(--surface-3)" strokeWidth="6" fill="none" strokeLinecap="round" />
@@ -377,7 +380,7 @@ export function IntelligenceSection() {
 // ─────────────────────────────────────────────────────────── Capabilities (bento)
 
 export function CapabilitiesSection() {
-  const { t } = useT();
+  const { t, l } = useT();
   const tiles: { icon: LucideIcon; title: string; body: string; className?: string; accent?: 'green' | 'orange' | 'dark'; visual?: ReactNode }[] = [
     {
       icon: Gauge,
@@ -412,16 +415,41 @@ export function CapabilitiesSection() {
       ),
     },
     { icon: Trophy, title: t('Levels, streaks & achievements', 'Level, streak & achievement'), body: t('Gamification that rewards real progress — without feeling childish.', 'Gamifikasi yang menghargai progres nyata — tanpa terasa kekanak-kanakan.') },
+    {
+      icon: GraduationCap,
+      title: t('Learning Map', 'Learning Map'),
+      body: t('Your whole curriculum, class by class, mapped to the career it powers — with an applied project and a question for your lecturer.', 'Seluruh kurikulummu, per mata kuliah, dipetakan ke karier yang didukungnya — lengkap dengan proyek terapan dan pertanyaan untuk dosen.'),
+      className: 'md:col-span-2',
+      accent: 'green',
+      visual: (
+        <ul className="mt-5 space-y-2.5">
+          {['product-elective', 'system-analysis', 'statistics'].map((id, i) => {
+            const c = COURSE_BY_ID[id];
+            const v = courseRelevance(c, 'product-manager');
+            return (
+              <li key={id} className="grid grid-cols-[minmax(0,1fr)_88px_38px] items-center gap-3 text-[13px]">
+                <span className="truncate font-medium">{l(c.name)}</span>
+                <span className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+                  <motion.span className={cn('block h-full rounded-full', v >= 70 ? 'bg-green' : 'bg-orange')} initial={{ width: 0 }} whileInView={{ width: `${v}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease, delay: i * 0.08 }} />
+                </span>
+                <span className="tabular text-right font-bold">{v}%</span>
+              </li>
+            );
+          })}
+        </ul>
+      ),
+    },
     { icon: NotebookPen, title: t('Career Journal', 'Career Journal'), body: t('Reflections, interview notes and decisions in one searchable place.', 'Refleksi, catatan wawancara, dan keputusan di satu tempat yang bisa dicari.') },
     { icon: Bell, title: t('Reminders & deadlines', 'Pengingat & deadline'), body: t('Never miss an application, mentor session or quest.', 'Jangan lewatkan lamaran, sesi mentor, atau quest.') },
-    { icon: Users, title: 'Orbit for Campus', body: t('Aggregate insight for career centers to plan programs.', 'Insight agregat bagi career center untuk merencanakan program.') },
+    { icon: Users, title: 'Orbit for Campus', body: t('Aggregate insight for lecturers, advisors and career centers.', 'Insight agregat untuk dosen, pembimbing akademik, dan career center.') },
+    { icon: Presentation, title: t('Complements educators', 'Melengkapi pendidik'), body: t('Teachers and lecturers keep teaching — Orbit shows learners why it matters.', 'Guru dan dosen tetap mengajar — Orbit menunjukkan kepada pelajar kenapa itu penting.') },
     { icon: Languages, title: t('Bilingual, light & dark', 'Bilingual, terang & gelap'), body: t('English and Bahasa Indonesia, with a carefully designed dark mode.', 'Bahasa Inggris dan Indonesia, dengan mode gelap yang dirancang cermat.') },
     { icon: FolderKanban, title: t('Works on every screen', 'Nyaman di semua layar'), body: t('Designed mobile-first with bottom navigation and touch-friendly sheets.', 'Dirancang mobile-first dengan navigasi bawah dan sheet yang ramah sentuhan.') },
   ];
   return (
     <Section id="capabilities" className="bg-surface-2/40">
       <div className="container-orbit">
-        <SectionIntro center eyebrow={t('Capabilities', 'Kapabilitas')} title={t('Everything a future-ready student needs, connected.', 'Semua yang dibutuhkan mahasiswa siap masa depan, terhubung.')} />
+        <SectionIntro center eyebrow={t('Capabilities', 'Kapabilitas')} title={t('Everything a future-ready learner needs, connected.', 'Semua yang dibutuhkan pelajar siap masa depan, terhubung.')} />
         <motion.div variants={stagger(0.05)} {...reveal} className="mt-12 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
           {tiles.map((x) => (
             <motion.div

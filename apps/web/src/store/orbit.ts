@@ -150,6 +150,7 @@ function customData(profile: Profile): OrbitData {
     profile,
     quests: [],
     missions: [
+      { id: 'm0', title: { en: 'See what your classes are for in the Learning Map', id: 'Lihat kegunaan mata kuliahmu di Learning Map' }, minutes: 5, done: false, xp: 20, to: '/app/learning' },
       { id: 'm1', title: { en: 'Explore your Career Universe', id: 'Jelajahi Career Universe-mu' }, minutes: 5, done: false, xp: 20, to: '/app/universe' },
       { id: 'm2', title: { en: 'Add your first quest to the Journey', id: 'Tambahkan quest pertama ke Journey' }, minutes: 5, done: false, xp: 30, to: '/app/journey' },
       { id: 'm3', title: { en: 'Save one opportunity that fits', id: 'Simpan satu peluang yang cocok' }, minutes: 10, done: false, xp: 20, to: '/app/discover' },

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from 'motion/react';
 import {
   BarChart3,
-
+  BookOpen,
   BriefcaseBusiness,
   Compass,
   FileText,
@@ -36,7 +36,7 @@ const SCATTER: { icon: LucideIcon; title: { en: string; id: string }; meta: { en
   { icon: BriefcaseBusiness, title: { en: 'Job portals', id: 'Portal lowongan' }, meta: { en: '214 listings, no idea which fit', id: '214 lowongan, tak tahu mana yang cocok' }, x: 410, y: -50, r: 7, tone: 'bg-muted-orange text-orange-strong dark:text-orange' },
   { icon: GraduationCap, title: { en: 'Course bookmarks', id: 'Bookmark kursus' }, meta: { en: '12 saved · 1 finished', id: '12 disimpan · 1 selesai' }, x: -470, y: 130, r: 6, tone: 'bg-muted-green text-green-strong dark:text-green' },
   { icon: Users, title: { en: 'Mentors', id: 'Mentor' }, meta: { en: '“Who should I even ask?”', id: '“Harus tanya siapa?”' }, x: 450, y: 120, r: -6, tone: 'bg-muted-violet text-violet' },
-  { icon: StickyNote, title: { en: 'Notes app', id: 'Aplikasi catatan' }, meta: { en: '38 scattered notes', id: '38 catatan tercecer' }, x: -170, y: 170, r: -4, tone: 'bg-surface-2 text-muted-foreground' },
+  { icon: StickyNote, title: { en: 'Lecture notes', id: 'Catatan kuliah' }, meta: { en: '“When will I ever use this?”', id: '“Ini buat apa, sih?”' }, x: -170, y: 170, r: -4, tone: 'bg-surface-2 text-muted-foreground' },
   { icon: BarChart3, title: { en: 'Progress spreadsheet', id: 'Spreadsheet progres' }, meta: { en: 'Abandoned in week 2', id: 'Ditinggal di minggu ke-2' }, x: 190, y: 175, r: 5, tone: 'bg-muted-orange text-orange-strong dark:text-orange' },
 ];
 
@@ -66,7 +66,7 @@ function ScatterCard({ c, progress, index }: { c: (typeof SCATTER)[number]; prog
 function PainPoints() {
   const { t } = useT();
   const pains = [
-    { icon: HelpCircle, title: t('No clear starting point', 'Tidak tahu harus mulai dari mana'), body: t('Students know the goal, but not the first concrete step toward it.', 'Mahasiswa tahu tujuannya, tetapi tidak tahu langkah konkret pertamanya.') },
+    { icon: HelpCircle, title: t('Learning without direction', 'Belajar tanpa arah'), body: t('Learners pass class after class without seeing how any of it connects to the career they want.', 'Pelajar lulus dari satu pelajaran ke pelajaran lain tanpa melihat hubungannya dengan karier yang diinginkan.') },
     { icon: Layers, title: t('Skill gaps are difficult to prioritize', 'Gap skill sulit diprioritaskan'), body: t('Everything looks important, so nothing gets finished.', 'Semuanya terlihat penting, sehingga tidak ada yang selesai.') },
     { icon: LineChart, title: t('Progress is difficult to measure', 'Progres sulit diukur'), body: t('Without a score, effort never translates into confidence.', 'Tanpa skor, usaha tidak pernah berubah menjadi kepercayaan diri.') },
   ];
@@ -115,9 +115,9 @@ export function ProblemSection() {
                   <div className="inline-flex items-center gap-2 rounded-full border border-orange/25 bg-muted-orange/70 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-orange-strong dark:text-orange">
                     <span className="size-1.5 rounded-full bg-orange" /> {t('The problem', 'Masalahnya')}
                   </div>
-                  <h2 className="mt-4 max-w-3xl font-display text-[44px] font-extrabold leading-[1.05] tracking-[-0.035em]">{t('Career preparation is fragmented across too many platforms.', 'Persiapan karier tersebar di terlalu banyak platform.')}</h2>
+                  <h2 className="mt-4 max-w-3xl font-display text-[44px] font-extrabold leading-[1.05] tracking-[-0.035em]">{t('Learning and career preparation are scattered — and disconnected.', 'Belajar dan persiapan karier tercecer — dan tidak saling terhubung.')}</h2>
                   <p className="mt-4 max-w-2xl text-[17px] text-muted-foreground">
-                    {t('Students spend significant time moving between disconnected tools without understanding which action actually improves career readiness.', 'Mahasiswa menghabiskan banyak waktu berpindah antar tools yang tidak terhubung tanpa memahami aksi mana yang benar-benar meningkatkan kesiapan karier.')}
+                    {t('Students sit through dozens of classes without knowing which ones matter for the career they want — then rush to prepare in the final semester across disconnected tools.', 'Pelajar mengikuti puluhan pelajaran tanpa tahu mana yang penting untuk karier yang diinginkan — lalu terburu-buru bersiap di semester akhir dengan tools yang tidak saling terhubung.')}
                   </p>
                 </motion.div>
                 <motion.div style={{ scale: orbitScale, opacity: orbitOpacity }} className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2">
@@ -128,9 +128,9 @@ export function ProblemSection() {
                 </motion.div>
                 <motion.div style={{ opacity: answerOpacity, y: answerY }} className="absolute inset-x-0 top-[77%] text-center">
                   <h2 className="font-display text-[38px] font-extrabold leading-tight tracking-[-0.035em]">
-                    {t('Orbit brings it all', 'Orbit menyatukan semuanya')} <span className="orbit-gradient-text">{t('into one place.', 'dalam satu tempat.')}</span>
+                    {t('Orbit points it all', 'Orbit mengarahkan semuanya')} <span className="orbit-gradient-text">{t('at one goal.', 'ke satu tujuan.')}</span>
                   </h2>
-                  <p className="mx-auto mt-3 max-w-lg text-[17px] text-muted-foreground">{t('One profile. One context. One connected journey.', 'Satu profil. Satu konteks. Satu journey yang terhubung.')}</p>
+                  <p className="mx-auto mt-3 max-w-lg text-[17px] text-muted-foreground">{t('One profile. One goal. One connected learning journey.', 'Satu profil. Satu tujuan. Satu journey belajar yang terhubung.')}</p>
                 </motion.div>
               </div>
             </div>
@@ -139,7 +139,7 @@ export function ProblemSection() {
       ) : (
         <div className="py-20">
           <div className="container-orbit">
-            <SectionIntro eyebrow={t('The problem', 'Masalahnya')} title={t('Career preparation is fragmented across too many platforms.', 'Persiapan karier tersebar di terlalu banyak platform.')} desc={t('Students spend significant time moving between disconnected tools without understanding which action actually improves career readiness.', 'Mahasiswa menghabiskan banyak waktu berpindah antar tools yang tidak terhubung tanpa memahami aksi mana yang benar-benar meningkatkan kesiapan karier.')} />
+            <SectionIntro eyebrow={t('The problem', 'Masalahnya')} title={t('Learning and career preparation are scattered — and disconnected.', 'Belajar dan persiapan karier tercecer — dan tidak saling terhubung.')} desc={t('Students sit through dozens of classes without knowing which ones matter for the career they want — then rush to prepare in the final semester across disconnected tools.', 'Pelajar mengikuti puluhan pelajaran tanpa tahu mana yang penting untuk karier yang diinginkan — lalu terburu-buru bersiap di semester akhir dengan tools yang tidak saling terhubung.')} />
             <motion.div variants={stagger(0.06)} {...reveal} className="mt-8 grid grid-cols-2 gap-3">
               {SCATTER.map((c, i) => (
                 <motion.div key={i} variants={fadeUp} style={{ rotate: c.r / 3 }} className="flex items-center gap-2.5 rounded-2xl border border-border bg-surface p-3 shadow-card">
@@ -164,6 +164,7 @@ export function ProblemSection() {
 
 const ECO: { icon: LucideIcon; en: string; id: string }[] = [
   { icon: User, en: 'Career Profile', id: 'Career Profile' },
+  { icon: BookOpen, en: 'Classes', id: 'Pelajaran' },
   { icon: Target, en: 'Career Gaps', id: 'Gap Karier' },
   { icon: BriefcaseBusiness, en: 'Opportunities', id: 'Peluang' },
   { icon: GraduationCap, en: 'Learning', id: 'Pembelajaran' },
@@ -185,7 +186,7 @@ export function ConnectedSection() {
                 {t('One profile. One context.', 'Satu profil. Satu konteks.')} <span className="orbit-gradient-text">{t('One connected journey.', 'Satu journey yang terhubung.')}</span>
               </>
             }
-            desc={t('Orbit connects your profile, gaps, opportunities, learning, mentors, journey and progress — so every recommendation understands everything else.', 'Orbit menghubungkan profil, gap, peluang, pembelajaran, mentor, journey, dan progresmu — sehingga setiap rekomendasi memahami semua hal lainnya.')}
+            desc={t('Orbit connects your classes, profile, gaps, learning, mentors, opportunities, journey and progress — so every recommendation understands everything else.', 'Orbit menghubungkan pelajaran, profil, gap, pembelajaran, mentor, peluang, journey, dan progresmu — sehingga setiap rekomendasi memahami semua hal lainnya.')}
           />
           <motion.ul variants={stagger(0.08)} {...reveal} className="mt-8 space-y-3">
             {[
@@ -259,11 +260,11 @@ export function ConnectedSection() {
 // ─────────────────────────────────────────────────────────── How it works
 
 const STAGES: { icon: LucideIcon; title: { en: string; id: string }; body: { en: string; id: string } }[] = [
-  { icon: User, title: { en: 'Career Profile', id: 'Career Profile' }, body: { en: 'Your studies, experiences, projects and skills become measurable evidence.', id: 'Studi, pengalaman, proyek, dan skill-mu menjadi bukti yang terukur.' } },
+  { icon: User, title: { en: 'Career Profile', id: 'Career Profile' }, body: { en: 'Your classes, studies, experiences, projects and skills become measurable evidence.', id: 'Pelajaran, studi, pengalaman, proyek, dan skill-mu menjadi bukti yang terukur.' } },
   { icon: Gauge, title: { en: 'Career Intelligence', id: 'Career Intelligence' }, body: { en: 'Orbit scores readiness across six dimensions and explains every number.', id: 'Orbit menilai kesiapan di enam dimensi dan menjelaskan setiap angkanya.' } },
   { icon: OrbitIcon, title: { en: 'Career Universe', id: 'Career Universe' }, body: { en: 'See how skills, people, learning and opportunities connect to you.', id: 'Lihat bagaimana skill, orang, pembelajaran, dan peluang terhubung denganmu.' } },
   { icon: BriefcaseBusiness, title: { en: 'Opportunity Intelligence', id: 'Opportunity Intelligence' }, body: { en: 'Jobs, internships, courses and mentors ranked by fit — with reasons.', id: 'Pekerjaan, magang, kursus, dan mentor diurutkan berdasarkan kecocokan — dengan alasannya.' } },
-  { icon: Route, title: { en: 'Adaptive Career Journey', id: 'Adaptive Career Journey' }, body: { en: 'A roadmap and board of quests that adapts as you grow.', id: 'Roadmap dan board berisi quest yang menyesuaikan saat kamu bertumbuh.' } },
+  { icon: Route, title: { en: 'Adaptive Career Journey', id: 'Adaptive Career Journey' }, body: { en: 'A learning roadmap of quests — from classes to courses to applications — that adapts as you grow.', id: 'Roadmap belajar berisi quest — dari pelajaran, kursus, hingga lamaran — yang menyesuaikan saat kamu bertumbuh.' } },
   { icon: Zap, title: { en: 'Next Best Action', id: 'Next Best Action' }, body: { en: 'Always one clear step with its expected readiness impact.', id: 'Selalu satu langkah jelas dengan perkiraan dampak kesiapannya.' } },
 ];
 

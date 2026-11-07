@@ -50,8 +50,8 @@ export function scrollToId(id: string) {
 
 const LINKS = [
   { id: 'mission', en: 'Our Purpose', idn: 'Tujuan' },
+  { id: 'compass', en: 'Learning Compass', idn: 'Kompas Belajar' },
   { id: 'how', en: 'How It Works', idn: 'Cara Kerja' },
-  { id: 'universe', en: 'Career Universe', idn: 'Career Universe' },
   { id: 'sdg', en: 'SDG 4', idn: 'SDG 4' },
   { id: 'campus', en: 'For Campus', idn: 'Untuk Kampus', to: '/campus' },
   { id: 'faq', en: 'FAQ', idn: 'FAQ' },
@@ -190,6 +190,7 @@ export function MarketingFooter() {
       title: t('Platform', 'Platform'),
       items: [
         { label: t('How It Works', 'Cara Kerja'), onClick: link('how') },
+        { label: t('Learning Compass', 'Kompas Belajar'), onClick: link('compass') },
         { label: 'Career Universe', onClick: link('universe') },
         { label: 'Journey', onClick: link('journey') },
         { label: 'Discover', onClick: link('capabilities') },
@@ -200,15 +201,17 @@ export function MarketingFooter() {
       items: [
         { label: t('Career Guide', 'Panduan Karier'), onClick: link('intelligence') },
         { label: 'FAQ', onClick: link('faq') },
-        { label: t('About Orbit', 'Tentang Orbit'), onClick: link('sdg') },
+        { label: t('Our role in education', 'Peran kami di pendidikan'), onClick: link('complement') },
+        { label: t('About Orbit', 'Tentang Orbit'), onClick: link('mission') },
       ],
     },
     {
       title: t('Built For', 'Dibuat Untuk'),
       items: [
-        { label: t('Students', 'Mahasiswa'), to: '/start' },
-        { label: t('Fresh Graduates', 'Fresh Graduate'), to: '/start' },
-        { label: t('Career Centers', 'Career Center'), to: '/campus' },
+        { label: t('SMA/SMK Students', 'Siswa SMA/SMK'), to: '/start' },
+        { label: t('University Students', 'Mahasiswa'), to: '/start' },
+        { label: t('Graduates & Job Seekers', 'Lulusan & Pencari Kerja'), to: '/start' },
+        { label: t('Schools & Campuses', 'Sekolah & Kampus'), to: '/campus' },
       ],
     },
   ];
@@ -219,8 +222,8 @@ export function MarketingFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr_1.3fr]">
           <div>
             <Logo />
-            <p className="mt-5 font-display text-[20px] font-bold leading-snug tracking-tight">{t('Your career is not a straight line.', 'Kariermu bukan garis lurus.')}</p>
-            <p className="mt-2 max-w-xs text-[14px] text-muted-foreground">{t('Build the skills, experiences, connections, and confidence you need to become career-ready.', 'Bangun skill, pengalaman, koneksi, dan kepercayaan diri yang kamu butuhkan untuk siap berkarier.')}</p>
+            <p className="mt-5 font-display text-[20px] font-bold leading-snug tracking-tight">{t('Every lesson, aimed at your future.', 'Setiap pelajaran, terarah ke masa depanmu.')}</p>
+            <p className="mt-2 max-w-xs text-[14px] text-muted-foreground">{t('A goal-centred learning system that connects what you study to the career you want — alongside your school and campus.', 'Sistem belajar berpusat pada tujuan yang menghubungkan apa yang kamu pelajari dengan karier yang kamu inginkan — berdampingan dengan sekolah dan kampusmu.')}</p>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {cols.map((c) => (
@@ -247,7 +250,7 @@ export function MarketingFooter() {
           <div className="relative overflow-hidden rounded-[24px] bg-[#0f1d16] p-6 text-white shadow-pop">
             <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-green/35 blur-3xl" aria-hidden />
             <div className="relative font-display text-[20px] font-bold leading-snug">{t('Ready to build your Orbit?', 'Siap membangun Orbit-mu?')}</div>
-            <p className="relative mt-2 text-[14px] text-white/65">{t('Start building your career journey today.', 'Mulai bangun journey kariermu hari ini.')}</p>
+            <p className="relative mt-2 text-[14px] text-white/65">{t('Start your goal-centred learning journey today.', 'Mulai journey belajar yang terarah hari ini.')}</p>
             <Button asChild className="relative mt-5 w-full">
               <Link to={mode === 'none' ? '/start' : '/app'}>
                 {t('Build My Orbit', 'Bangun Orbit Saya')} <ArrowRight />

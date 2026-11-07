@@ -3,13 +3,16 @@ import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { Area, AreaChart, Bar, BarChart, Cell, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from 'recharts';
-import { ArrowRight, BookOpen, Building2, CalendarCheck, Check, GraduationCap, HeartHandshake, LifeBuoy, Lock, Route, Sparkles, Target, TrendingUp, UsersRound, Briefcase, Plus } from 'lucide-react';
+import { ArrowRight, BookOpen, Building2, CalendarCheck, Check, GraduationCap, HeartHandshake, LifeBuoy, Lock, Presentation, Route, Sparkles, Target, TrendingUp, UsersRound, Briefcase, Plus } from 'lucide-react';
 import { MarketingFooter, MarketingNav, SectionIntro, useLenis } from '@/features/landing/chrome';
 import { Card, ProgressBar } from '@/components/ui/primitives';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/form';
 import { CountUp } from '@/components/brand/brand';
 import { FACULTIES, GOAL_LABEL, GUIDANCE_SEGMENTS, PROGRAMS, type FacultyId, type FacultyStats } from '@/data/campus';
+import { COURSES, courseRelevance, curriculumFor } from '@/data/courses';
+import { SKILL_BY_ID } from '@/data/catalog';
+import type { RoleId } from '@/data/types';
 import { useOrbit } from '@/store/orbit';
 import { useIsDark } from '@/store/ui';
 import { useT, intlLocale } from '@/lib/i18n';
@@ -30,13 +33,13 @@ export default function CampusPage() {
           <div className="pointer-events-none absolute -top-40 left-1/2 size-[640px] -translate-x-1/2 rounded-full bg-green/12 blur-3xl" aria-hidden />
           <div className="container-orbit relative text-center">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-[13px] font-semibold shadow-xs">
-              <Building2 className="size-4 text-green" /> Orbit for Campus
+              <Building2 className="size-4 text-green" /> Orbit for Campus <span className="text-muted-foreground">· {t('Campus Innovation', 'Inovasi Kampus')}</span>
             </motion.div>
             <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.05 }} className="mx-auto mt-5 max-w-4xl font-display text-[38px] font-extrabold leading-[1.04] tracking-[-0.04em] sm:text-[56px] lg:text-[64px]">
-              {t('Individual career intelligence,', 'Career intelligence individu,')} <span className="orbit-gradient-text">{t('actionable campus insight.', 'insight kampus yang actionable.')}</span>
+              {t('Individual learning journeys,', 'Perjalanan belajar individu,')} <span className="orbit-gradient-text">{t('actionable campus insight.', 'insight kampus yang actionable.')}</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.12 }} className="mx-auto mt-5 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-              {t('Career centers see where students stand, which skill gaps are growing and which programs will move readiness most — using aggregate data only.', 'Career center bisa melihat posisi mahasiswa, gap skill yang membesar, dan program yang paling meningkatkan kesiapan — hanya dengan data agregat.')}
+              {t('Lecturers, academic advisors and career centers see where students stand, which skill gaps are growing, which courses feed them and which programs will move readiness most — using aggregate data only. Orbit supports educators; it never replaces them.', 'Dosen, dosen pembimbing akademik, dan career center bisa melihat posisi mahasiswa, gap skill yang membesar, mata kuliah yang mendukungnya, dan program yang paling meningkatkan kesiapan — hanya dengan data agregat. Orbit mendukung pendidik, tidak menggantikannya.')}
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.2 }} className="mt-8 flex flex-wrap justify-center gap-3">
               <Button size="lg" onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -84,9 +87,9 @@ export default function CampusPage() {
 function EcosystemFlow() {
   const { t } = useT();
   const steps = [
-    { icon: GraduationCap, label: t('Students', 'Mahasiswa'), sub: t('Build readiness', 'Membangun kesiapan') },
-    { icon: Building2, label: t('Career Center', 'Career Center'), sub: t('Sees aggregate gaps', 'Melihat gap agregat') },
-    { icon: BookOpen, label: t('Learning', 'Pembelajaran'), sub: t('Targets programs', 'Program terarah') },
+    { icon: GraduationCap, label: t('Students', 'Mahasiswa'), sub: t('Learn with a goal', 'Belajar dengan tujuan') },
+    { icon: Presentation, label: t('Lecturers & Advisors', 'Dosen & Pembimbing'), sub: t('See aggregate gaps', 'Melihat gap agregat') },
+    { icon: BookOpen, label: t('Curriculum & programs', 'Kurikulum & program'), sub: t('Aligned to demand', 'Selaras dengan kebutuhan') },
     { icon: Briefcase, label: t('Employers', 'Perusahaan'), sub: t('Meet ready talent', 'Bertemu talenta siap') },
   ];
   return (
@@ -338,7 +341,110 @@ function Dashboard() {
               })}
           </ul>
         </Card>
+
+        <CurriculumAlignment faculty={f} />
       </div>
     </section>
+  );
+}
+
+const FACULTY_MAJOR: Record<FacultyId, string | null> = {
+  all: null,
+  cs: 'Computer Science',
+  is: 'Information Systems',
+  biz: 'Management',
+  design: 'Visual Communication Design',
+};
+
+const GOAL_ROLE: Record<keyof FacultyStats['goals'], RoleId> = {
+  product: 'product-manager',
+  software: 'software-engineer',
+  data: 'data-analyst',
+  marketing: 'digital-marketer',
+  design: 'ui-ux-designer',
+};
+
+/** Cohort gap names (from aggregate data) mapped to the skills courses train. */
+const GAP_SKILLS: Record<string, string[]> = {
+  'Data Analytics': ['product-analytics', 'data-viz'],
+  SQL: ['sql'],
+  'Public Speaking': ['public-speaking'],
+  'Product Strategy': ['product-strategy'],
+  'Interview Skills': ['communication', 'storytelling'],
+  'System Design': ['apis'],
+  'Stakeholder Management': ['stakeholder'],
+  'A/B Testing': ['ab-testing'],
+  'Digital Marketing Tools': ['seo', 'content'],
+  'Portfolio Storytelling': ['storytelling'],
+  'User Research': ['user-research'],
+  Prototyping: ['prototyping'],
+};
+
+/** Which courses feed what this cohort wants to become — a prompt for lecturers, never a verdict. */
+function CurriculumAlignment({ faculty }: { faculty: FacultyStats }) {
+  const { t, l } = useT();
+  const major = FACULTY_MAJOR[faculty.id];
+  const courses = major ? curriculumFor(major).filter((c) => c.level === 'campus') : COURSES.filter((c) => c.level === 'campus' && (c.majors === 'all' || c.majors.length >= 3));
+  const goalKeys = Object.keys(faculty.goals) as (keyof FacultyStats['goals'])[];
+  const goalTotal = goalKeys.reduce((s, k) => s + faculty.goals[k], 0);
+  const gapSkills = faculty.gaps.map((g) => ({ name: g.skill, pct: g.pct, skills: GAP_SKILLS[typeof g.skill === 'string' ? g.skill : g.skill.en] ?? [] }));
+  const rows = courses
+    .map((c) => {
+      const alignment = Math.round(goalKeys.reduce((s, k) => s + (faculty.goals[k] / goalTotal) * courseRelevance(c, GOAL_ROLE[k]), 0));
+      const trains = gapSkills.filter((g) => c.skills.some((cs) => g.skills.includes(cs.skill)));
+      return { c, alignment, trains };
+    })
+    .sort((a, b) => b.trains.length - a.trains.length || b.alignment - a.alignment)
+    .slice(0, 6);
+
+  return (
+    <Card className="mt-5 overflow-hidden">
+      <div className="flex flex-col gap-2 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+          <h3 className="flex items-center gap-2 font-display text-[17px] font-bold">
+            <Presentation className="size-[18px] text-green" /> {t('Curriculum ↔ career alignment', 'Keselarasan kurikulum ↔ karier')}
+          </h3>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {t('Courses that can close this cohort’s top gaps, weighted by the careers students are aiming for.', 'Mata kuliah yang bisa menutup gap teratas angkatan ini, dibobot dengan karier yang dituju mahasiswa.')}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted-green px-3 py-1 text-[12px] font-semibold text-green-strong dark:text-green">
+          <HeartHandshake className="size-3.5" /> {t('Suggestions for lecturers — academic judgment stays with you', 'Saran untuk dosen — keputusan akademik tetap di tangan Anda')}
+        </span>
+      </div>
+      <ul className="divide-y divide-border">
+        {rows.map(({ c, alignment, trains }) => (
+          <li key={c.id} className="grid gap-3 p-5 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,1.6fr)] lg:items-center">
+            <div className="min-w-0">
+              <div className="font-semibold">{l(c.name)}</div>
+              <div className="text-[12.5px] text-muted-foreground">
+                {t('Semester {n}', 'Semester {n}', { n: c.semester })} · {c.skills.slice(0, 3).map((s) => l(SKILL_BY_ID[s.skill].name)).join(', ')}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1.5 flex items-center justify-between text-[12.5px]">
+                <span className="text-muted-foreground">{t('Fit with student goals', 'Kecocokan dengan tujuan mahasiswa')}</span>
+                <span className="tabular font-bold">{alignment}%</span>
+              </div>
+              <ProgressBar value={alignment} size="sm" tone={alignment >= 40 ? 'green' : 'orange'} label={l(c.name)} />
+            </div>
+            <div className="min-w-0 text-[13px]">
+              {trains.length > 0 ? (
+                <div className="mb-1.5 flex flex-wrap gap-1.5">
+                  {trains.map((g) => (
+                    <span key={l(g.name)} className="inline-flex h-6 items-center rounded-full bg-muted-orange px-2 text-[11.5px] font-semibold text-orange-strong dark:text-orange">
+                      {t('Closes gap', 'Menutup gap')}: {l(g.name)} · {g.pct}%
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <p className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{t('Applied idea:', 'Ide terapan:')}</span> {l(c.project)}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }

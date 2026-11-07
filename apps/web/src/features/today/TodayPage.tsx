@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Compass,
   Flame,
+  GraduationCap,
   Lightbulb,
   ListChecks,
   Play,
@@ -29,6 +30,7 @@ import { moveQuest, requestAddToJourney } from '@/store/actions';
 import { DIMENSIONS, DIM_LABEL, DIM_SHORT, levelInfo, matchOpportunity, nextBestAction, skillProfile } from '@/engine/intelligence';
 import { ROLE_BY_ID, SKILL_BY_ID } from '@/data/catalog';
 import { MILESTONES } from '@/data/journey';
+import { BAND_LABEL, courseRelevance, courseStatus, curriculumFor, relevanceBand } from '@/data/courses';
 import { OPPORTUNITIES, OPP_BY_ID, TYPE_LABEL } from '@/data/opportunities';
 import { useT } from '@/lib/i18n';
 import { GettingStarted } from './GettingStarted';
@@ -267,6 +269,11 @@ export default function TodayPage() {
         </motion.div>
       </div>
 
+      {/* Classes → career */}
+      <motion.div variants={fadeUp}>
+        <FromYourClasses />
+      </motion.div>
+
       {/* Growth + Resources */}
       <div className="grid gap-5 lg:grid-cols-12 [&>*]:min-w-0">
         <motion.div variants={fadeUp} className="lg:col-span-5">
@@ -494,6 +501,55 @@ function AgentInsight() {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** The classes a learner is taking now, read against their career goal. */
+function FromYourClasses() {
+  const profile = useOrbit((s) => s.profile)!;
+  const { t, l } = useT();
+  const { items, mode } = useMemo(() => {
+    const all = curriculumFor(profile.major).map((c) => ({ c, score: courseRelevance(c, profile.targetRole), status: courseStatus(c, profile.semester) }));
+    const current = all.filter((x) => x.status === 'current');
+    const next = all.filter((x) => x.status === 'next');
+    const pool = current.length ? current : next.length ? next : all;
+    return { items: [...pool].sort((a, b) => b.score - a.score).slice(0, 3), mode: current.length ? 'current' : next.length ? 'next' : 'done' };
+  }, [profile]);
+  if (!items.length) return null;
+  const role = l(ROLE_BY_ID[profile.targetRole].name);
+  return (
+    <Card className="p-5 sm:p-6">
+      <SectionHeader
+        icon={GraduationCap}
+        title={t('From your classes', 'Dari mata kuliahmu')}
+        description={
+          mode === 'current'
+            ? t('This semester’s classes, read against your {role} goal', 'Mata kuliah semester ini, dibaca terhadap tujuan {role}-mu', { role })
+            : mode === 'next'
+              ? t('Coming up next — and what they will do for your {role} goal', 'Berikutnya — dan manfaatnya untuk tujuan {role}-mu', { role })
+              : t('Classes you have finished that power your {role} goal', 'Mata kuliah yang sudah selesai dan mendukung tujuan {role}-mu', { role })
+        }
+        action={<CardLink to="/app/learning">Learning Map</CardLink>}
+      />
+      <div className="grid gap-3 md:grid-cols-3">
+        {items.map(({ c, score }) => {
+          const band = relevanceBand(score);
+          return (
+            <Link key={c.id} to="/app/learning" className="card-interactive group flex flex-col rounded-2xl border border-border bg-surface p-4">
+              <div className="flex items-center justify-between gap-2">
+                <Badge tone={band === 'core' || band === 'strong' ? 'green' : band === 'useful' ? 'orange' : 'neutral'}>{l(BAND_LABEL[band])}</Badge>
+                <span className="tabular text-[12.5px] font-bold text-green-strong dark:text-green">{score}%</span>
+              </div>
+              <div className="mt-3 font-display text-[15px] font-bold leading-snug">{l(c.name)}</div>
+              <div className="mt-1 truncate text-[12.5px] text-muted-foreground">{c.skills.slice(0, 3).map((s) => l(SKILL_BY_ID[s.skill].name)).join(' · ')}</div>
+              <p className="mt-3 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
+                <span className="font-semibold text-foreground">{t('Applied idea:', 'Ide terapan:')}</span> {l(c.project)}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 

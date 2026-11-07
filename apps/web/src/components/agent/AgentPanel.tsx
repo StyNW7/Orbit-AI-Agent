@@ -19,6 +19,7 @@ import { ease } from '@/lib/motion';
 
 const PAGE_LABEL: Record<string, { en: string; id: string }> = {
   '/app': { en: 'Today', id: 'Hari Ini' },
+  '/app/learning': { en: 'Learning Map', id: 'Learning Map' },
   '/app/universe': { en: 'Career Universe', id: 'Career Universe' },
   '/app/journey': { en: 'Journey', id: 'Journey' },
   '/app/discover': { en: 'Discover', id: 'Discover' },
