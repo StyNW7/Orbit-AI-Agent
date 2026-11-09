@@ -54,7 +54,7 @@ export function OrbitArrivesSection() {
           <span className="absolute inset-0 rounded-full border border-dashed border-green/40 animate-orbit-spin" aria-hidden>
             <span className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange shadow-orange" />
           </span>
-          <OrbitMark className="relative size-24 drop-shadow-[0_24px_40px_rgba(10,180,106,0.5)]" animated />
+          <OrbitMark className="relative size-28 drop-shadow-[0_24px_40px_rgba(10,180,106,0.5)]" animated />
         </motion.div>
         <Heading center>
           {t('Then,', 'Lalu,')} <span className="orbit-gradient-text">{t('Orbit arrives.', 'Orbit hadir.')}</span>
@@ -269,6 +269,8 @@ export function SolutionSection() {
   const [active, setActive] = useState(() => {
     const r = useStoryReturn.getState().ret;
     const i = r?.path === STORY_PATH ? PILLARS.findIndex((p) => p.id === r.pillar) : -1;
+    // Back from building an Orbit (pillar 1): continue the story at pillar 2.
+    if (PILLARS[i]?.id === 'start') return 1;
     return Math.max(0, i);
   });
 
@@ -294,7 +296,7 @@ export function SolutionSection() {
           <div>
             <Chapter n="06" label={t('The solution', 'Solusinya')} />
             <Heading>
-              {t('Six pillars.', '6 pilar.')} <span className="orbit-gradient-text">{t('One connected system.', 'Satu sistem yang terhubung.')}</span>
+              {t('Seven pillars.', '7 pilar.')} <span className="orbit-gradient-text">{t('One connected system.', 'Satu sistem yang terhubung.')}</span>
             </Heading>
           </div>
           <Lead className="lg:mb-1">{t('Each pillar answers one of Naya’s problems. Tap a planet to explore it — then open the feature live.', 'Setiap pilar menjawab satu masalah Naya. Klik planet untuk melihat pilarnya — lalu buka fiturnya secara langsung.')}</Lead>

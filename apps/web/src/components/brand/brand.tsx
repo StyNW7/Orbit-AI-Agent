@@ -10,10 +10,10 @@ import orbitLogo from '@/assets/orbit-logo.png';
  * stays legible on dark or green surfaces; `animated` adds a gentle breathing motion.
  */
 export function OrbitMark({ className, animated = false, plate = false }: { className?: string; animated?: boolean; plate?: boolean }) {
-  const img = <img src={orbitLogo} alt="" aria-hidden draggable={false} className={cn('size-full select-none object-contain', animated && 'animate-logo-breathe')} />;
+  // Sized relative to the mark itself (never padding: % padding resolves against the parent's width).
   return (
-    <span className={cn('inline-flex size-8 shrink-0 items-center justify-center', plate && 'rounded-full bg-white p-[12%] shadow-sm', className)} aria-hidden>
-      {img}
+    <span className={cn('inline-flex size-10 shrink-0 items-center justify-center', plate && 'rounded-full bg-white shadow-sm ring-1 ring-black/5', className)} aria-hidden>
+      <img src={orbitLogo} alt="" aria-hidden draggable={false} className={cn('block max-w-none select-none object-contain', plate ? 'size-[82%]' : 'size-full', animated && 'animate-logo-breathe')} />
     </span>
   );
 }
@@ -21,8 +21,8 @@ export function OrbitMark({ className, animated = false, plate = false }: { clas
 export function Logo({ className, compact = false, markClassName }: { className?: string; compact?: boolean; markClassName?: string }) {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <OrbitMark className={markClassName} />
-      {!compact && <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-foreground">Orbit</span>}
+      <OrbitMark className={cn('size-11', markClassName)} />
+      {!compact && <span className="font-display text-[21px] font-extrabold tracking-[-0.03em] text-foreground">Orbit</span>}
     </span>
   );
 }

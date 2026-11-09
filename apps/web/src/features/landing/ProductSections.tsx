@@ -285,7 +285,7 @@ export function IntelligenceSection() {
           <div className="card p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <OrbitMark className="size-9" animated={!done} />
+                <OrbitMark className="size-11" animated={!done} />
                 <div>
                   <div className="font-display text-[15px] font-bold">Career Intelligence</div>
                   <div className="text-[12px] text-muted-foreground">{done ? t('Analysis complete', 'Analisis selesai') : t('Analysing Naya’s profile…', 'Menganalisis profil Naya…')}</div>

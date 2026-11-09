@@ -123,7 +123,7 @@ export function ProblemSection() {
                 <motion.div style={{ scale: orbitScale, opacity: orbitOpacity }} className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2">
                   <div className="relative">
                     <span className="absolute -inset-10 rounded-full bg-green/25 blur-2xl" aria-hidden />
-                    <OrbitMark className="relative size-24 drop-shadow-[0_24px_40px_rgba(10,180,106,0.45)]" animated />
+                    <OrbitMark className="relative size-28 drop-shadow-[0_24px_40px_rgba(10,180,106,0.45)]" animated />
                   </div>
                 </motion.div>
                 <motion.div style={{ opacity: answerOpacity, y: answerY }} className="absolute inset-x-0 top-[77%] text-center">
@@ -249,7 +249,7 @@ export function ConnectedSection() {
             })}
           </div>
           <motion.div variants={{ hidden: { scale: 0.5, opacity: 0 }, show: { scale: 1, opacity: 1, transition: { duration: 0.7, ease, delay: 0.2 } } }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <OrbitMark className="size-20 drop-shadow-[0_18px_30px_rgba(10,180,106,0.45)] sm:size-24" animated />
+            <OrbitMark className="size-24 drop-shadow-[0_18px_30px_rgba(10,180,106,0.45)] sm:size-28" animated />
           </motion.div>
         </motion.div>
       </div>

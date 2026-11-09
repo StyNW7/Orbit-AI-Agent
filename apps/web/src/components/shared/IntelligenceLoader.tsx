@@ -43,7 +43,7 @@ export function IntelligenceLoader({ onDone, stepMs = 640, className }: { onDone
           </motion.span>
         ))}
         <div className="absolute inset-12 rounded-full bg-green/20 blur-2xl" />
-        <OrbitMark className="relative size-14" animated />
+        <OrbitMark className="relative size-16" animated />
       </div>
       <h2 className="font-display text-[22px] font-bold tracking-tight">{t('Orbit is analysing your career', 'Orbit sedang menganalisis kariermu')}</h2>
       <p className="mt-1.5 text-[14px] text-muted-foreground">{t('Career Intelligence takes a few seconds.', 'Career Intelligence hanya butuh beberapa detik.')}</p>

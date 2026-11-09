@@ -33,7 +33,7 @@ function Splash() {
     <div className="flex min-h-dvh items-center justify-center bg-background" role="status" aria-label="Loading Orbit">
       <div className="relative">
         <span className="absolute inset-0 animate-pulse-ring rounded-full bg-green/30" aria-hidden />
-        <OrbitMark className="relative size-14 drop-shadow-[0_12px_28px_rgba(10,180,106,0.35)]" animated />
+        <OrbitMark className="relative size-16 drop-shadow-[0_12px_28px_rgba(10,180,106,0.35)]" animated />
       </div>
     </div>
   );

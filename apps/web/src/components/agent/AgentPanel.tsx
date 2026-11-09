@@ -44,7 +44,7 @@ function Thinking() {
   }, []);
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3" aria-live="polite">
-      <OrbitMark className="size-8 shrink-0" animated />
+      <OrbitMark className="size-9 shrink-0" animated />
       <div className="space-y-1.5 rounded-2xl rounded-tl-md border border-border bg-surface-2/60 px-4 py-3">
         {THINKING.map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: i <= step ? 1 : 0.35 }} className="flex items-center gap-2 text-[13px]">
@@ -88,7 +88,7 @@ function ReplyCard({ reply, onAction, latest }: { reply: AgentReply; onAction: (
   const { t } = useT();
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease }} className="flex gap-3">
-      <OrbitMark className="size-8 shrink-0" />
+      <OrbitMark className="size-9 shrink-0" />
       <div className="min-w-0 flex-1 rounded-2xl rounded-tl-md border border-border bg-surface p-4 shadow-xs">
         {reply.context && <div className="mb-1.5 text-[12px] font-medium text-subtle-foreground">{reply.context}</div>}
         <div className="font-display text-[15.5px] font-bold leading-snug">{reply.headline}</div>
@@ -222,7 +222,7 @@ export function AgentPanel() {
       header={
         <div className="flex items-center gap-3">
           <div className="relative">
-            <OrbitMark className="size-10" animated />
+            <OrbitMark className="size-12" animated />
             <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-green ring-2 ring-surface" aria-hidden />
           </div>
           <div className="min-w-0">

@@ -14,6 +14,7 @@ import {
   Sparkles,
   SquareKanban,
   Sun,
+  UserPlus,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -212,8 +213,26 @@ export interface Pillar {
 
 export const PILLARS: Pillar[] = [
   {
-    id: 'understand',
+    id: 'start',
     n: '01',
+    name: { en: 'Build your Orbit', id: 'Bangun Orbit-mu' },
+    verb: { en: 'Start', id: 'Mulai' },
+    feature: 'Build My Orbit · Onboarding',
+    icon: UserPlus,
+    color: '#0E9F8E',
+    answers: 0,
+    pain: { en: '“I don’t even know where to start.”', id: '“Aku bahkan tidak tahu harus mulai dari mana.”' },
+    desc: { en: 'Create your Orbit account first: fill in your Career Profile, choose a career goal and rate your skills. Orbit then runs your first career analysis on the spot.', id: 'Buat akun Orbit terlebih dahulu: isi Career Profile, pilih tujuan karier, dan nilai skill-mu. Orbit langsung menjalankan analisis karier pertamamu saat itu juga.' },
+    points: [
+      { en: 'Three short steps: profile, goal, skills', id: 'Tiga langkah singkat: profil, tujuan, skill' },
+      { en: 'Your first career analysis in seconds', id: 'Analisis karier pertamamu dalam hitungan detik' },
+      { en: 'Try it as Naya, or build your own', id: 'Coba sebagai Naya, atau bangun milikmu sendiri' },
+    ],
+    demos: [{ label: { en: 'Build My Orbit', id: 'Bangun Orbit Saya' }, to: '/start', icon: UserPlus }],
+  },
+  {
+    id: 'understand',
+    n: '02',
     name: { en: 'Know where you stand', id: 'Pahami posisimu' },
     verb: { en: 'Understand', id: 'Pahami' },
     feature: 'Career Intelligence',
@@ -231,7 +250,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'learn',
-    n: '02',
+    n: '03',
     name: { en: 'Learn with purpose', id: 'Belajar terarah' },
     verb: { en: 'Learn', id: 'Belajar' },
     feature: 'Learning Map · Knowledge Vault',
@@ -252,7 +271,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'explore',
-    n: '03',
+    n: '04',
     name: { en: 'Explore your universe', id: 'Jelajahi kemungkinan' },
     verb: { en: 'Explore', id: 'Jelajahi' },
     feature: 'Career Universe',
@@ -270,7 +289,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'plan',
-    n: '04',
+    n: '05',
     name: { en: 'Plan the path', id: 'Rencanakan langkah' },
     verb: { en: 'Plan', id: 'Rencana' },
     feature: 'Journey',
@@ -291,7 +310,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'connect',
-    n: '05',
+    n: '06',
     name: { en: 'Find the right opportunities', id: 'Temukan peluang' },
     verb: { en: 'Discover', id: 'Temukan' },
     feature: 'Discover',
@@ -312,7 +331,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'grow',
-    n: '06',
+    n: '07',
     name: { en: 'Grow every day', id: 'Tumbuh setiap hari' },
     verb: { en: 'Grow', id: 'Tumbuh' },
     feature: 'Today · Progress · Orbit Agent',

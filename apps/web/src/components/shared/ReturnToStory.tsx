@@ -35,7 +35,7 @@ export function ReturnToStory({ className }: { className?: string }) {
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 dark:bg-black/5">
                 <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
               </span>
-              <OrbitMark className="hidden size-5 shrink-0 sm:block" />
+              <OrbitMark plate className="hidden size-7 shrink-0 sm:inline-flex" />
               <span className="min-w-0 truncate text-[13.5px] font-semibold">
                 {t('Back to Why Orbit', 'Kembali ke Why Orbit')}
                 <span className="hidden font-medium opacity-60 sm:inline"> · {l(ret.label)}</span>

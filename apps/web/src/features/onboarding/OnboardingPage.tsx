@@ -26,6 +26,7 @@ import { Badge, Card } from '@/components/ui/primitives';
 import { Field, Input, Range, Select } from '@/components/ui/form';
 import { SkillLevelPicker } from '@/components/shared/SkillLevel';
 import { IntelligenceLoader } from '@/components/shared/IntelligenceLoader';
+import { ReturnToStory } from '@/components/shared/ReturnToStory';
 import { LanguageToggle, ThemeToggle } from '@/components/shared/toggles';
 import { ImpactPill } from '@/components/shared/layout-blocks';
 import { NAYA } from '@/data/persona';
@@ -194,6 +195,9 @@ export default function OnboardingPage() {
           </div>
         </div>
       )}
+
+      {/* Opened from Why Orbit (pillar 1): keep the way back to the story in reach, above the step bar. */}
+      <ReturnToStory className={cn('top-auto lg:top-auto', stepIndex >= 0 ? 'bottom-24 lg:bottom-24' : 'bottom-6 lg:bottom-7')} />
     </div>
   );
 }
