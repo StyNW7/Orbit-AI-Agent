@@ -136,7 +136,7 @@ function OrbitSystem({ active, onSelect }: { active: number; onSelect: (i: numbe
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <span className="absolute inset-0 animate-pulse-ring rounded-full bg-green/30" aria-hidden />
         <div className="orbit-gradient relative flex size-[96px] flex-col items-center justify-center rounded-full text-white shadow-[0_20px_50px_-14px_rgba(10,180,106,0.85)] ring-[6px] ring-surface sm:size-[120px]">
-          <OrbitMark className="size-9 sm:size-11" />
+          <OrbitMark plate className="size-10 sm:size-12" />
           <span className="mt-1 font-display text-[13px] font-extrabold tracking-tight sm:text-[15px]">Orbit</span>
         </div>
       </div>

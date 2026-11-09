@@ -50,7 +50,7 @@ export default function SignInPage() {
         <div className="pointer-events-none absolute -bottom-32 right-0 size-[420px] rounded-full bg-orange/15 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" aria-hidden />
         <Link to="/" className="relative inline-flex items-center gap-2.5">
-          <OrbitMark />
+          <OrbitMark plate className="size-9" />
           <span className="font-display text-[19px] font-extrabold tracking-tight">Orbit</span>
         </Link>
         <div className="relative my-auto">

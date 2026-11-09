@@ -3,25 +3,18 @@ import { animate, motion, useInView, useMotionValue, useTransform } from 'motion
 import { cn } from '@/lib/utils';
 import { useT } from '@/lib/i18n';
 import { bandOf } from '@/engine/intelligence';
+import orbitLogo from '@/assets/orbit-logo.png';
 
-/** Orbit mark: a core, an orbit path and an orange “next step” planet. */
-export function OrbitMark({ className, animated = false }: { className?: string; animated?: boolean }) {
-  const gid = `om-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+/**
+ * Orbit mark — the official logo (assets/orbit-logo.png). `plate` sets it on a white disc so it
+ * stays legible on dark or green surfaces; `animated` adds a gentle breathing motion.
+ */
+export function OrbitMark({ className, animated = false, plate = false }: { className?: string; animated?: boolean; plate?: boolean }) {
+  const img = <img src={orbitLogo} alt="" aria-hidden draggable={false} className={cn('size-full select-none object-contain', animated && 'animate-logo-breathe')} />;
   return (
-    <svg viewBox="0 0 64 64" className={cn('size-8', className)} aria-hidden>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#13C177" />
-          <stop offset="1" stopColor="#079A5A" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="17" fill={`url(#${gid})`} />
-      <g className={animated ? 'animate-orbit-spin' : undefined} style={{ transformOrigin: '32px 32px' }}>
-        <ellipse cx="32" cy="32" rx="22" ry="9" transform="rotate(-28 32 32)" stroke="#fff" strokeOpacity=".6" strokeWidth="3" fill="none" />
-        <circle cx="50" cy="21" r="5" fill="#FB9002" />
-      </g>
-      <circle cx="32" cy="32" r="9" fill="#fff" />
-    </svg>
+    <span className={cn('inline-flex size-8 shrink-0 items-center justify-center', plate && 'rounded-full bg-white p-[12%] shadow-sm', className)} aria-hidden>
+      {img}
+    </span>
   );
 }
 

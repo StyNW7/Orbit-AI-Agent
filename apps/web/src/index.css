@@ -127,8 +127,18 @@
   --animate-shimmer: shimmer 1.8s ease-in-out infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+  --animate-logo-breathe: logo-breathe 2.8s ease-in-out infinite;
 }
 
+@keyframes logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
 @keyframes orbit-spin {
   to {
     transform: rotate(360deg);
