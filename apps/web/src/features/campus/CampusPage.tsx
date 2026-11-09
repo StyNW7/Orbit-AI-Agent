@@ -9,6 +9,7 @@ import { Card, ProgressBar } from '@/components/ui/primitives';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/form';
 import { CountUp } from '@/components/brand/brand';
+import { ReturnToStory } from '@/components/shared/ReturnToStory';
 import { FACULTIES, GOAL_LABEL, GUIDANCE_SEGMENTS, PROGRAMS, type FacultyId, type FacultyStats } from '@/data/campus';
 import { COURSES, courseRelevance, curriculumFor } from '@/data/courses';
 import { SKILL_BY_ID } from '@/data/catalog';
@@ -80,6 +81,7 @@ export default function CampusPage() {
         </section>
       </main>
       <MarketingFooter />
+      <ReturnToStory />
     </div>
   );
 }

@@ -41,6 +41,12 @@ export function useLenis() {
   }, []);
 }
 
+/** Jump to an exact scroll position (used to restore a reader's place). */
+export function scrollToY(y: number) {
+  if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+  else window.scrollTo({ top: y, behavior: 'auto' });
+}
+
 export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -49,6 +55,7 @@ export function scrollToId(id: string) {
 }
 
 const LINKS = [
+  { id: 'why', en: 'Why Orbit', idn: 'Why Orbit', to: '/why-orbit' },
   { id: 'mission', en: 'Our Purpose', idn: 'Tujuan' },
   { id: 'compass', en: 'Learning Compass', idn: 'Kompas Belajar' },
   { id: 'flow', en: 'How It Works', idn: 'Cara Kerja' },
@@ -104,8 +111,9 @@ export function MarketingNav() {
               const isActive = l.to ? location.pathname === l.to : location.pathname === '/' && active === l.id;
               return (
                 <li key={l.id}>
-                  <button type="button" onClick={() => go(l)} className={cn('relative rounded-lg px-3 py-2 text-[14px] font-medium transition-colors', isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                    {isActive && <motion.span layoutId="nav-active" className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-green" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                  <button type="button" onClick={() => go(l)} className={cn('relative rounded-lg px-2.5 py-2 text-[14px] font-medium transition-colors 2xl:px-3', isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+                    {isActive && <motion.span layoutId="nav-active" className="absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-green 2xl:inset-x-3" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                    {l.id === 'why' && <span className="mr-1.5 inline-block size-1.5 -translate-y-px rounded-full bg-orange align-middle" aria-hidden />}
                     {t(l.en, l.idn)}
                   </button>
                 </li>
@@ -199,6 +207,7 @@ export function MarketingFooter() {
     {
       title: t('Resources', 'Sumber'),
       items: [
+        { label: 'Why Orbit', to: '/why-orbit' },
         { label: t('Career Guide', 'Panduan Karier'), onClick: link('intelligence') },
         { label: 'FAQ', onClick: link('faq') },
         { label: t('Our role in education', 'Peran kami di pendidikan'), onClick: link('complement') },

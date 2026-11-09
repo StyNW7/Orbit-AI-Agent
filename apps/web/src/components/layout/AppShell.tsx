@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bell, Compass, Gauge, LineChart, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
+import { Bell, BookOpenText, Compass, Gauge, LineChart, NotebookPen, ChevronsLeft, ChevronsRight, Globe, LogOut, RotateCcw, Search, Settings, Sparkles, Zap } from 'lucide-react';
 import { Logo, OrbitMark } from '@/components/brand/brand';
 import { Avatar, Kbd, ProgressBar } from '@/components/ui/primitives';
 import { DropdownContent, DropdownItem, DropdownLabel, DropdownMenu, DropdownSeparator, DropdownTrigger, Tooltip } from '@/components/ui/overlays';
@@ -13,6 +13,7 @@ import { NotificationsPanel } from './NotificationsPanel';
 import { AgentPanel } from '@/components/agent/AgentPanel';
 import { OrbitSwitcher, OrbitsModal, useOrbitRows } from '@/components/orbits/Orbits';
 import { AddMaterialModal } from '@/features/learning/AddMaterialModal';
+import { ReturnToStory } from '@/components/shared/ReturnToStory';
 import { useOrbit, useInsights } from '@/store/orbit';
 import { useUi } from '@/store/ui';
 import { useGuide } from '@/store/guide';
@@ -207,6 +208,9 @@ function UserMenu() {
         </DropdownItem>
         <DropdownItem onSelect={() => navigate('/')}>
           <Globe /> {t('Orbit website', 'Website Orbit')}
+        </DropdownItem>
+        <DropdownItem onSelect={() => navigate('/why-orbit')}>
+          <BookOpenText /> Why Orbit
         </DropdownItem>
         <DropdownItem onSelect={() => navigate('/campus')}>
           <Zap /> Orbit for Campus
@@ -408,6 +412,7 @@ export default function AppShell() {
       </div>
       <BottomNav />
       <AgentFab />
+      <ReturnToStory />
       <AgentPanel />
       <CommandPalette />
       <NotificationsPanel />

@@ -13,6 +13,7 @@ import { useT } from '@/lib/i18n';
 import { useIsMobile } from '@/hooks/use-media';
 
 const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
+const WhyOrbitPage = lazy(() => import('@/features/why/WhyOrbitPage'));
 const CampusPage = lazy(() => import('@/features/campus/CampusPage'));
 const SignInPage = lazy(() => import('@/features/auth/SignInPage'));
 const OnboardingPage = lazy(() => import('@/features/onboarding/OnboardingPage'));
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       { path: '/', element: <Page><LandingPage /></Page> },
+      { path: '/why-orbit', element: <Page><WhyOrbitPage /></Page> },
       { path: '/campus', element: <Page><CampusPage /></Page> },
       { path: '/signin', element: <Page><SignInPage /></Page> },
       { path: '/start', element: <Page><OnboardingPage /></Page> },

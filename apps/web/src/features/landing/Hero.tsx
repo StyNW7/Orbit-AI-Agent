@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight, BookOpen, BriefcaseBusiness, GraduationCap, Lightbulb, MousePointerClick, PlayCircle, Route, School, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
+import { ArrowRight, BookOpen, BookOpenText, BriefcaseBusiness, GraduationCap, Lightbulb, MousePointerClick, PlayCircle, Route, School, ShieldCheck, Sparkles, Target, Users, Languages, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReadinessRing } from '@/components/brand/brand';
 import { useOrbit } from '@/store/orbit';
@@ -246,10 +246,15 @@ export function Hero() {
               {t('Explore How It Works', 'Lihat Cara Kerjanya')}
             </Button>
           </motion.div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.85 }} className="mt-5">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.85 }} className="mt-5 flex flex-col items-start gap-2.5">
             <Link to="/start?demo=1" className="group inline-flex items-center gap-2 text-[14px] font-semibold text-green-strong dark:text-green">
               <PlayCircle className="size-[18px]" />
               {t('Try the 2-minute demo as Naya — no sign-up', 'Coba demo 2 menit sebagai Naya — tanpa daftar')}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link to="/why-orbit" className="group inline-flex items-center gap-2 text-[14px] font-semibold text-muted-foreground transition hover:text-foreground">
+              <BookOpenText className="size-[18px] text-orange" />
+              {t('Why Orbit? See the data and Naya’s story', 'Kenapa Orbit? Lihat data dan cerita Naya')}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>

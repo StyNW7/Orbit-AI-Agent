@@ -27,7 +27,16 @@ export default function JourneyPage() {
   const insights = useInsights()!;
   const { t, l } = useT();
   const questParam = params.get('quest');
-  const [view, setView] = useState<View>(() => (params.get('view') === 'board' || questParam ? 'board' : (localStorage.getItem('orbit.journeyView') as View) || 'roadmap'));
+  const [view, setView] = useState<View>(() => {
+    const v = params.get('view');
+    if (v === 'board' || questParam) return 'board';
+    if (v === 'roadmap') return 'roadmap';
+    try {
+      return (localStorage.getItem('orbit.journeyView') as View) || 'roadmap';
+    } catch {
+      return 'roadmap';
+    }
+  });
   const [open, setOpen] = useState<string | null>(null);
   const [adding, setAdding] = useState<{ milestone?: string } | null>(null);
   const [remind, setRemind] = useState<ReminderTarget | null>(null);
