@@ -1,7 +1,7 @@
 <div align="center">
 
 <img src="assets/orbit-logo.png" alt="Logo Orbit" width="104" />
-
+ 
 # Orbit
 
 ### Build Your Path. Become Career-Ready.
